@@ -12,13 +12,11 @@ def _register():
     global _PROVIDERS
     from llm.groq_provider import GroqProvider
     from llm.openrouter_provider import OpenRouterProvider
-    from llm.deepseek_provider import DeepSeekProvider
     from llm.ollama_provider import OllamaProvider
 
     _PROVIDERS = {
         "groq": GroqProvider,
         "openrouter": OpenRouterProvider,
-        "deepseek": DeepSeekProvider,
         "ollama": OllamaProvider,
     }
 

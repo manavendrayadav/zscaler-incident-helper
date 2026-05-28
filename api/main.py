@@ -4,7 +4,6 @@ OpenWebUI connects to /v1/chat/completions exactly as it would to the OpenAI API
 
 Model naming convention:  zscaler-rag/{provider}-{model-slug}
   e.g.  zscaler-rag/groq-llama3-70b
-        zscaler-rag/deepseek-chat
         zscaler-rag/openrouter-deepseek-chat
         zscaler-rag/ollama-llama3
 """
@@ -59,7 +58,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cfg.ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -69,7 +68,7 @@ app.add_middleware(
 
 def verify_api_key(authorization: str = Header(default="")):
     token = authorization.replace("Bearer ", "").strip()
-    if token and token != cfg.API_KEY:
+    if not token or token != cfg.API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
@@ -110,12 +109,25 @@ def _slug_to_model(provider: str, slug: str) -> str:
     return slug  # return as-is if no match
 
 
-def _extract_last_user_message(messages) -> str:
-    """Extract the most recent user message from the chat history."""
+def _extract_last_user_message(messages) -> tuple[str, list]:
+    """
+    Extract the most recent user message from the chat history.
+
+    Returns:
+        (text_content, image_blocks) where image_blocks is a list of
+        OpenAI vision image_url content blocks (may be empty).
+    """
     for msg in reversed(messages):
         if msg.role == "user":
-            return msg.content
-    return ""
+            if isinstance(msg.content, str):
+                return msg.content, []
+            # OpenAI vision format: list of content blocks
+            text = " ".join(
+                b.get("text", "") for b in msg.content if b.get("type") == "text"
+            )
+            images = [b for b in msg.content if b.get("type") == "image_url"]
+            return text, images
+    return "", []
 
 
 # ── routes ───────────────────────────────────────────────────────────────────
@@ -227,22 +239,43 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
     3. Call the chosen LLM with a RAG-augmented prompt.
     4. Return an OpenAI-format response with sources appended.
     """
-    query = _extract_last_user_message(req.messages)
-    if not query:
+    from rag.log_parser import is_log_content, extract_log_signals, detect_product_from_logs
+
+    query, images = _extract_last_user_message(req.messages)
+    if not query and not images:
         raise HTTPException(status_code=400, detail="No user message found in messages array")
 
     provider_name, model_name = _parse_model_id(req.model)
 
+    # ── Mode detection ────────────────────────────────────────────────────────
+    if images:
+        # Screenshot or image attached → vision log analysis (Ollama-only for privacy)
+        mode = "log_analysis"
+        retrieval_query = query or "zscaler error log troubleshooting"
+    elif is_log_content(query):
+        # Pasted text log → log analysis mode; extract concise search signals
+        mode = "log_analysis"
+        retrieval_query = extract_log_signals(query)
+        if not req.product_filter:
+            req.product_filter = detect_product_from_logs(query)
+    else:
+        # Normal question → standard doc_search mode (unchanged behaviour)
+        mode = "doc_search"
+        retrieval_query = query
+
     # Retrieve
     try:
-        chunks = retrieve(query, top_k=req.top_k, product_filter=req.product_filter)
+        chunks = retrieve(retrieval_query, top_k=req.top_k, product_filter=req.product_filter)
     except Exception as e:
         raise HTTPException(
             status_code=503,
             detail=f"Qdrant retrieval failed: {e}. Is Qdrant running and indexed?",
         )
 
-    if not chunks:
+    prompt_tokens = 0
+    completion_tokens = 0
+
+    if not chunks and mode == "doc_search":
         answer = (
             "No relevant Zscaler documentation found for this query. "
             "The knowledge base may not yet contain information about this topic. "
@@ -251,7 +284,7 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
         )
         sources_footer = ""
     else:
-        # Generate
+        # Generate — pass mode + images so the right system prompt and vision content are used
         try:
             llm_resp = generate(
                 query=query,
@@ -260,6 +293,8 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
                 model=model_name,
                 temperature=req.temperature,
                 max_tokens=req.max_tokens,
+                mode=mode,
+                original_images=images or None,
             )
             answer = llm_resp.content
             sources_footer = format_sources_footer(chunks)
@@ -283,8 +318,8 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
             )
         ],
         usage=UsageInfo(
-            prompt_tokens=prompt_tokens if chunks else 0,
-            completion_tokens=completion_tokens if chunks else 0,
-            total_tokens=(prompt_tokens + completion_tokens) if chunks else 0,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=prompt_tokens + completion_tokens,
         ),
     )

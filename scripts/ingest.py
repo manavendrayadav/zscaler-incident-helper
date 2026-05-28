@@ -83,7 +83,11 @@ def main(reset: bool = False):
     # ── 3. Embed ──────────────────────────────────────────────────────────
     console.print("\n[bold]Step 2/3:[/] Generating embeddings (local, no API cost)…")
     embeddings = embed_chunks(chunks)
-    console.print(f"  -> Embedding shape: {embeddings.shape} ({cfg.EMBEDDING_MODEL})")
+    if isinstance(embeddings, dict):
+        shape_str = f"dense={embeddings['dense'].shape}"
+    else:
+        shape_str = str(embeddings.shape)
+    console.print(f"  -> Embedding shape: {shape_str} ({cfg.EMBEDDING_MODEL})")
 
     # ── 4. Upsert into Qdrant ─────────────────────────────────────────────
     console.print("\n[bold]Step 3/3:[/] Upserting into Qdrant…")

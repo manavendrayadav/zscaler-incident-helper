@@ -3,7 +3,7 @@ Pydantic models for the OpenAI-compatible FastAPI endpoints.
 OpenWebUI (and any OpenAI SDK client) connects to these endpoints without modification.
 """
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel
 
 
@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 class ChatMessageRequest(BaseModel):
     role: Literal["system", "user", "assistant"]
-    content: str
+    content: Union[str, list]   # list = OpenAI vision format [{type, text/image_url}]
 
 
 class ChatCompletionRequest(BaseModel):

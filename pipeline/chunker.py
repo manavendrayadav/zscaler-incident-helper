@@ -4,6 +4,7 @@ Stage 1: split on Markdown headers to preserve document structure.
 Stage 2: recursively split large sections to stay within embedding token limits.
 """
 
+import hashlib
 import re
 import uuid
 from pathlib import Path
@@ -93,13 +94,18 @@ def chunk_markdown_file(file_path: Path) -> list[dict[str, Any]]:
         section = " › ".join(p for p in section_parts if p) or title
 
         sub_chunks = recursive_splitter.split_text(text)
-        for sub in sub_chunks:
+        for idx, sub in enumerate(sub_chunks):
             sub = sub.strip()
             if len(sub) < 80:   # skip tiny fragments
                 continue
+            # Deterministic ID: same URL+section+position always maps to the same
+            # Qdrant point, so re-ingesting a page overwrites rather than duplicates.
+            det_id = str(uuid.UUID(hashlib.md5(
+                f"{url}|{section}|{idx}".encode()
+            ).hexdigest()))
             chunks.append(
                 {
-                    "chunk_id": str(uuid.uuid4()),
+                    "chunk_id": det_id,
                     "text": sub,
                     "metadata": {
                         "url": url,
@@ -112,6 +118,15 @@ def chunk_markdown_file(file_path: Path) -> list[dict[str, Any]]:
             )
 
     return chunks
+
+
+def chunk_files(files: list[Path]) -> list[dict[str, Any]]:
+    """Chunk a specific list of .md files (used for batch ingest during crawl)."""
+    all_chunks = []
+    for f in files:
+        if f.exists():
+            all_chunks.extend(chunk_markdown_file(f))
+    return all_chunks
 
 
 def chunk_all_files(raw_dir: Path | None = None) -> list[dict[str, Any]]:

@@ -2,12 +2,13 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from typing import Union
 
 
 @dataclass
 class Message:
     role: str   # "system" | "user" | "assistant"
-    content: str
+    content: Union[str, list]   # str for text; list for vision (OpenAI image_url format)
 
 
 @dataclass

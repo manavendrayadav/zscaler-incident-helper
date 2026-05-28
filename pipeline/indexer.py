@@ -1,12 +1,11 @@
 """
 Upsert text chunks and their embeddings into Qdrant.
-Supports incremental updates: re-index only changed pages by deleting old chunk IDs
-and inserting new ones. Chunk IDs are stored back into the crawl manifest.
+Supports both dense-only and hybrid (dense+sparse) collections.
+Chunk IDs are deterministic (MD5 of url|section|idx) — safe to upsert repeatedly.
 """
 
 import json
-import uuid
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 from rich.console import Console
@@ -28,11 +27,24 @@ def ensure_collection(client=None) -> None:
     client = client or _get_client()
     existing = [c.name for c in client.get_collections().collections]
     if cfg.COLLECTION_NAME not in existing:
-        client.create_collection(
-            collection_name=cfg.COLLECTION_NAME,
-            vectors_config=VectorParams(size=cfg.EMBEDDING_DIM, distance=Distance.COSINE),
-        )
-        console.print(f"[green]OK[/] Created Qdrant collection: [bold]{cfg.COLLECTION_NAME}[/]")
+        if cfg.SPARSE_ENABLED:
+            from qdrant_client.models import SparseVectorParams, SparseIndexParams
+            client.create_collection(
+                collection_name=cfg.COLLECTION_NAME,
+                vectors_config={
+                    "dense": VectorParams(size=cfg.EMBEDDING_DIM, distance=Distance.COSINE),
+                },
+                sparse_vectors_config={
+                    "sparse": SparseVectorParams(index=SparseIndexParams()),
+                },
+            )
+            console.print(f"[green]OK[/] Created hybrid collection: [bold]{cfg.COLLECTION_NAME}[/] (dense={cfg.EMBEDDING_DIM}d + sparse)")
+        else:
+            client.create_collection(
+                collection_name=cfg.COLLECTION_NAME,
+                vectors_config=VectorParams(size=cfg.EMBEDDING_DIM, distance=Distance.COSINE),
+            )
+            console.print(f"[green]OK[/] Created collection: [bold]{cfg.COLLECTION_NAME}[/] (dense={cfg.EMBEDDING_DIM}d)")
     else:
         console.print(f"[dim]Collection '{cfg.COLLECTION_NAME}' already exists.[/dim]")
 
@@ -52,36 +64,53 @@ def delete_chunks_by_ids(chunk_ids: list[str], client=None) -> None:
 
 def upsert_chunks(
     chunks: list[dict[str, Any]],
-    embeddings: np.ndarray,
+    embeddings: Union[np.ndarray, dict],
     client=None,
     batch_size: int = 64,
 ) -> list[str]:
     """
-    Upsert chunks into Qdrant. Returns list of inserted point IDs (UUIDs).
-    Each chunk dict must have keys: chunk_id, text, metadata.
+    Upsert chunks into Qdrant. Accepts dense-only (ndarray) or hybrid (dict) embeddings.
+    Returns list of inserted point IDs.
     """
     from qdrant_client.models import PointStruct
+
+    is_hybrid = isinstance(embeddings, dict)
+    if is_hybrid:
+        dense_vecs = embeddings["dense"]   # (N, DIM)
+        sparse_vecs = embeddings["sparse"]  # list of N dicts {token_id: weight}
+    else:
+        dense_vecs = embeddings
+        sparse_vecs = None
 
     client = client or _get_client()
     point_ids = []
 
     for i in range(0, len(chunks), batch_size):
-        batch_chunks = chunks[i : i + batch_size]
-        batch_vecs = embeddings[i : i + batch_size]
+        batch_chunks = chunks[i: i + batch_size]
+        batch_dense = dense_vecs[i: i + batch_size]
+        batch_sparse = sparse_vecs[i: i + batch_size] if sparse_vecs is not None else None
 
         points = []
-        for chunk, vec in zip(batch_chunks, batch_vecs):
+        for j, (chunk, vec) in enumerate(zip(batch_chunks, batch_dense)):
             cid = chunk["chunk_id"]
-            points.append(
-                PointStruct(
+            payload = {"text": chunk["text"], **chunk["metadata"]}
+
+            if is_hybrid and batch_sparse is not None:
+                from qdrant_client.models import SparseVector
+                sw = batch_sparse[j]  # {token_id_str: weight}
+                indices = [int(k) for k in sw.keys()]
+                values = [float(v) for v in sw.values()]
+                points.append(PointStruct(
                     id=cid,
-                    vector=vec.tolist(),
-                    payload={
-                        "text": chunk["text"],
-                        **chunk["metadata"],
+                    vector={
+                        "dense": vec.tolist(),
+                        "sparse": SparseVector(indices=indices, values=values),
                     },
-                )
-            )
+                    payload=payload,
+                ))
+            else:
+                points.append(PointStruct(id=cid, vector=vec.tolist(), payload=payload))
+
             point_ids.append(cid)
 
         client.upsert(collection_name=cfg.COLLECTION_NAME, points=points)
@@ -94,8 +123,11 @@ def get_collection_stats(client=None) -> dict:
     client = client or _get_client()
     try:
         info = client.get_collection(cfg.COLLECTION_NAME)
-        # vectors_count was removed in qdrant-client >= 1.9; use indexed_vectors_count
-        vectors = getattr(info, "indexed_vectors_count", None) or getattr(info, "vectors_count", 0) or 0
+        vectors = (
+            getattr(info, "indexed_vectors_count", None)
+            or getattr(info, "vectors_count", 0)
+            or 0
+        )
         return {
             "vectors_count": vectors,
             "points_count": info.points_count or 0,
