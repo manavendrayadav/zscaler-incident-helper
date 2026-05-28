@@ -1,0 +1,13 @@
+.env
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+data/raw/
+data/crawl_manifest.json
+qdrant_storage/
+.venv/
+venv/
+*.md
+!requirements.txt
