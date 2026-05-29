@@ -56,13 +56,18 @@ This starts four services:
 | RAG API | zscaler-rag-api | 8000 | OpenAI-compatible query endpoint |
 | OpenWebUI | zscaler-openwebui | 3000 | Chat interface |
 
-Wait 30–60 seconds for Crawl4AI to finish initialising its Playwright browser. Check with:
+Wait 30–60 seconds for all services to initialise. Check with:
 
 ```bash
 make doctor
 ```
 
 All four services should show OK before proceeding.
+
+> **Note on cold starts:** bge-m3 and the cross-encoder are baked into the rag-api Docker
+> image at build time, so the container starts healthy in ~20 seconds. No runtime downloads.
+> If you ever rebuild the image (`docker compose build rag-api`), the models are re-cached
+> into the new image layer automatically.
 
 ---
 

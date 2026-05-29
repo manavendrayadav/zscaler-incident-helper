@@ -11,14 +11,14 @@ Always run `make doctor` first — it surfaces 80% of issues instantly.
 
 ### rag-api shows FAIL in doctor
 
-**Most common cause:** The container is still loading the bge-m3 embedding model on first start.
-bge-m3 is ~1.5 GB and takes 5–10 minutes to download on a cold start.
+bge-m3 and the cross-encoder are baked into the Docker image, so rag-api should be healthy
+within ~20 seconds of `make up`. If it still shows FAIL:
 
 ```bash
 make logs   # watch for "Application startup complete."
 ```
 
-If startup complete is not appearing after 15 minutes:
+If startup complete is not appearing after 2 minutes:
 
 ```bash
 docker compose logs rag-api --tail=50

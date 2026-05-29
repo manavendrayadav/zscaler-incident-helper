@@ -108,7 +108,7 @@ After a healthy full ingest, expect:
 |--------|-------|
 | Qdrant chunks | ~13,800 |
 | Pages indexed | ~1,825 |
-| rag-api startup time | 5–8 min (first run, bge-m3 download); <30s (subsequent) |
+| rag-api startup time | ~20s (models baked into image, no runtime download) |
 | Query latency (Groq) | 3–8 seconds end-to-end |
 | Query latency (Ollama CPU) | 60–180 seconds depending on model size |
 | Knowledge base products | ZIA ~840, ZPA ~530, ZDX ~130, DECEPTION ~320 |
