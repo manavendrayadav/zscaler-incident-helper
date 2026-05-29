@@ -92,7 +92,6 @@ def check_api_keys() -> dict[str, str]:
     return {
         "groq":        "SET" if os.getenv("GROQ_API_KEY") else "MISSING",
         "openrouter":  "SET" if os.getenv("OPENROUTER_API_KEY") else "MISSING",
-        "deepseek":    "SET" if os.getenv("DEEPSEEK_API_KEY") else "MISSING",
     }
 
 
@@ -354,8 +353,6 @@ def main() -> int:
         warnings += 1
     if keys.get("openrouter") == "MISSING":
         warnings += 1
-    if keys.get("deepseek") == "MISSING":
-        warnings += 1
     if not kb_stats.get("missing"):
         if kb_stats.get("stale", 0) > 0:
             warnings += 1
@@ -364,7 +361,7 @@ def main() -> int:
         if kb_stats.get("file_mismatch"):
             warnings += 1
 
-    total_checks = 12
+    total_checks = 11
     passes = total_checks - failures - warnings
 
     if failures:
