@@ -118,6 +118,26 @@ def test_groq_key() -> tuple[bool, str]:
         return False, str(e)[:30]
 
 
+def test_ollama() -> tuple[str, bool, str]:
+    """
+    Check whether Ollama is reachable and has models pulled.
+    Returns (base_url, reachable, message).
+    """
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    try:
+        resp = httpx.get(f"{base_url}/api/tags", timeout=4.0)
+        if resp.status_code == 200:
+            models = resp.json().get("models", [])
+            if models:
+                return base_url, True, f"{len(models)} model(s) pulled"
+            return base_url, True, "running — no models pulled yet"
+        return base_url, False, f"HTTP {resp.status_code}"
+    except httpx.ConnectError:
+        return base_url, False, "offline"
+    except Exception as e:
+        return base_url, False, str(e)[:35]
+
+
 def analyze_manifest() -> dict:
     """Analyse crawl_manifest.json and data/raw/."""
     if not MANIFEST_FILE.exists():
@@ -209,11 +229,18 @@ def render_services(containers: dict[str, bool], http: dict[str, tuple[bool, str
     return Panel(t, title="[bold]Services[/]", border_style="blue")
 
 
-def render_keys(keys: dict[str, str], groq_valid: bool, groq_msg: str) -> Panel:
+def render_keys(
+    keys: dict[str, str],
+    groq_valid: bool,
+    groq_msg: str,
+    ollama_url: str,
+    ollama_ok: bool,
+    ollama_msg: str,
+) -> Panel:
     t = Table(box=None, padding=(0, 1), show_header=True, header_style="bold")
     t.add_column("Provider",  style="cyan", min_width=12)
-    t.add_column("Key",       min_width=10)
-    t.add_column("Tested",    min_width=24)
+    t.add_column("Key / URL", min_width=28)
+    t.add_column("Tested",    min_width=28)
 
     for provider, key_status in keys.items():
         if key_status == "MISSING":
@@ -226,6 +253,13 @@ def render_keys(keys: dict[str, str], groq_valid: bool, groq_msg: str) -> Panel:
             else:
                 tested_cell = SKIP + " (not tested)"
         t.add_row(provider, key_cell, tested_cell)
+
+    # Ollama — URL-based, no API key
+    url_cell    = f"[dim]{ollama_url}[/]"
+    tested_cell = (
+        f"[green]{ollama_msg}[/]" if ollama_ok else f"[yellow]{ollama_msg}[/]"
+    )
+    t.add_row("ollama", url_cell, tested_cell)
 
     return Panel(t, title="[bold]API Keys[/]", border_style="blue")
 
@@ -315,6 +349,7 @@ def main() -> int:
     console.print("[dim]Checking API keys...[/]")
     keys = check_api_keys()
     groq_valid, groq_msg = test_groq_key()
+    ollama_url, ollama_ok, ollama_msg = test_ollama()
 
     console.print("[dim]Analysing knowledge base...[/]")
     kb_stats = analyze_manifest()
@@ -325,7 +360,7 @@ def main() -> int:
     # ── Render panels ────────────────────────────────────────────────────────
     console.print()
     console.print(render_services(containers, http_results))
-    console.print(render_keys(keys, groq_valid, groq_msg))
+    console.print(render_keys(keys, groq_valid, groq_msg, ollama_url, ollama_ok, ollama_msg))
     console.print(render_knowledge_base(kb_stats))
     qdrant_http_ok, _ = http_results.get("qdrant", (False, ""))
     console.print(render_qdrant(qdrant_http_ok, product_counts))
@@ -353,6 +388,8 @@ def main() -> int:
         warnings += 1
     if keys.get("openrouter") == "MISSING":
         warnings += 1
+    if not ollama_ok:
+        warnings += 1
     if not kb_stats.get("missing"):
         if kb_stats.get("stale", 0) > 0:
             warnings += 1
@@ -361,7 +398,7 @@ def main() -> int:
         if kb_stats.get("file_mismatch"):
             warnings += 1
 
-    total_checks = 11
+    total_checks = 12
     passes = total_checks - failures - warnings
 
     if failures:
