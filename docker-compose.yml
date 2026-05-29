@@ -62,8 +62,11 @@ services:
     ports:
       - "3000:8080"
     environment:
+      # Singular form (legacy compat) + plural form (current OpenWebUI requirement)
       - OPENAI_API_BASE_URL=http://rag-api:8000/v1
+      - OPENAI_API_BASE_URLS=http://rag-api:8000/v1
       - OPENAI_API_KEY=zscaler-rag
+      - OPENAI_API_KEYS=zscaler-rag
       - WEBUI_SECRET_KEY=change-me-in-production
     depends_on:
       rag-api:

@@ -34,4 +34,8 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Single-process mode (no --workers flag).
+# bge-m3 uses PyTorch internally; forked worker processes corrupt PyTorch's
+# thread-pool state causing silent SIGBUS crashes. Single-process mode avoids
+# the fork entirely — one uvicorn process handles everything.
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
