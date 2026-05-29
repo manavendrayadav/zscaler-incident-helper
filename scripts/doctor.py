@@ -53,9 +53,9 @@ def check_docker_containers() -> dict[str, bool]:
     """Return {service_name: is_running} for all known containers."""
     name_map = {
         "zscaler-qdrant":   "qdrant",
-        "zscaler-crawl4ai": "crawl4ai",
-        "zscaler-rag-api":  "rag-api",
-        "open-webui":       "open-webui",
+        "zscaler-crawl4ai":  "crawl4ai",
+        "zscaler-rag-api":   "rag-api",
+        "zscaler-openwebui": "open-webui",
     }
     result = {v: False for v in name_map.values()}
     try:
@@ -216,7 +216,7 @@ def render_services(containers: dict[str, bool], http: dict[str, tuple[bool, str
         ("qdrant",     "zscaler-qdrant",   f"{QDRANT_URL}/health",   False),
         ("crawl4ai",   "zscaler-crawl4ai", f"{CRAWL4AI_URL}/health", True),   # optional
         ("rag-api",    "zscaler-rag-api",  f"{RAG_API_URL}/health",  False),
-        ("open-webui", "open-webui",       OPENWEBUI_URL,            True),   # optional
+        ("open-webui", "zscaler-openwebui", OPENWEBUI_URL,            True),   # optional
     ]
 
     for service, container, url, optional in rows:
