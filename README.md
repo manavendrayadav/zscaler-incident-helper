@@ -248,11 +248,78 @@ Then visit `http://localhost:3000`.
 
 ---
 
-## Operations Manual
+## System requirements
 
-The full SOP — initial setup, daily operations, incident investigation, LLM provider configuration, and troubleshooting — is in a single document:
+| | Minimum | Recommended |
+|--|---------|-------------|
+| **RAM** | 8 GB | 16 GB |
+| **CPU** | 4 cores | 8+ cores |
+| **Disk** | 15 GB | 25 GB |
+| **OS** | Any (Docker required) | Linux/macOS |
+| **Initial setup time** | ~4h (CPU embedding) | ~30 min (GPU) |
 
-**[docs/OPERATIONS.md](docs/OPERATIONS.md)**
+See [docs/HARDWARE_REQUIREMENTS.md](docs/HARDWARE_REQUIREMENTS.md) for details and GPU setup.
+
+---
+
+## What success looks like
+
+**Query:** "ZPA App Connector shows AUTH_FAILED after certificate renewal"
+
+```markdown
+## Root Cause Analysis
+AUTH_FAILED after certificate renewal typically indicates the App Connector
+is still presenting the old certificate. The ZPA broker rejects the stale cert.
+
+## Step-by-Step Resolution
+1. Delete the old connector in the Zscaler Admin Portal
+   (Administration → App Connectors → [connector name] → Delete)
+2. Re-enroll: download a fresh provisioning key and run the enrollment command
+3. Restart the connector service: `sudo systemctl restart zscaler-connector`
+
+## Verification Steps
+Monitor the connector status for 2 minutes. Should change:
+CONNECTOR_DOWN → CONNECTOR_UP
+
+## References
+- https://help.zscaler.com/zpa/troubleshooting-app-connectors
+- https://help.zscaler.com/zpa/app-connector-enrollment
+```
+
+---
+
+## Quick troubleshooting
+
+| Symptom | Most likely cause | Fix |
+|---------|------------------|-----|
+| `make doctor` shows rag-api FAIL | Models loading (wait 30s) or stale image | `docker compose build rag-api` |
+| Qdrant shows [404] in doctor | Normal — Qdrant uses gRPC health | Ignore; check container status column |
+| OpenWebUI "connection refused" | rag-api not healthy yet | Wait and retry; check `make logs` |
+| Responses are generic | 0 chunks in Qdrant | `make ingest` (crawl first if needed) |
+| 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zscaler-rag` |
+| Groq call shows Zscaler block page | ZCC SSL inspection intercept | Use Ollama or add bypass in ZIA |
+
+See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for all error patterns.
+
+---
+
+## Documentation
+
+| Document | Audience | Purpose |
+|----------|----------|---------|
+| [Beginner's Guide](docs/BEGINNER_GUIDE.md) | New users | What is RAG? Why this beats ChatGPT? |
+| [Quick Start](docs/QUICK_START.md) | Experienced users | Commands only — fastest path to first query |
+| [Operations Manual](docs/OPERATIONS.md) | Operators | Setup, daily use, incident investigation |
+| [Architecture](docs/ARCHITECTURE.md) | Developers | How the system works internally |
+| [API Reference](docs/API.md) | Integrators | Every endpoint with code examples |
+| [Configuration Guide](docs/CONFIGURATION.md) | Admins | Every `.env` parameter explained |
+| [Examples](docs/EXAMPLES.md) | All users | Real queries, responses, and API usage |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | All users | Error messages and fixes |
+| [Glossary](docs/GLOSSARY.md) | All users | RAG, vector DB, and Zscaler terms |
+| [Hardware Requirements](docs/HARDWARE_REQUIREMENTS.md) | Infra teams | System specs, GPU setup, Windows notes |
+| [Development Guide](docs/DEVELOPMENT.md) | Contributors | Local setup, tests, VS Code config |
+| [Architecture Decisions](docs/adr/) | Contributors | Why key decisions were made |
+| [Roadmap](docs/ROADMAP.md) | All | Planned features |
 
 ---
 
@@ -272,6 +339,12 @@ make ci                    # lint + typecheck + tests — must pass before PR
 ## Security
 
 For vulnerability reports and data privacy guidance, see [SECURITY.md](SECURITY.md).
+
+---
+
+## Support
+
+See [SUPPORT.md](SUPPORT.md) for how to get help.
 
 ---
 
