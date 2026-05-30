@@ -8,6 +8,7 @@ bge-m3 returns:
 """
 
 from typing import Any, Union
+
 import numpy as np
 from rich.console import Console
 

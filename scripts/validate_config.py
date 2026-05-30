@@ -7,7 +7,6 @@ Usage:
   make validate-config
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -15,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import httpx
 from rich.console import Console
-from rich.table import Table
 
 console = Console(highlight=False, markup=True, emoji=False)
 
@@ -54,10 +52,10 @@ def main() -> int:
             if r.status_code == 200:
                 _check("GROQ_API_KEY", "PASS", "authenticated")
             else:
-                s = _check("GROQ_API_KEY", "WARN", f"HTTP {r.status_code} — key may be invalid")
+                _check("GROQ_API_KEY", "WARN", f"HTTP {r.status_code} — key may be invalid")
                 warnings += 1
         except Exception as e:
-            s = _check("GROQ_API_KEY", "WARN", f"network error: {e}")
+            _check("GROQ_API_KEY", "WARN", f"network error: {e}")
             warnings += 1
     else:
         _check("GROQ_API_KEY", "WARN", "not set — Groq provider will not work")

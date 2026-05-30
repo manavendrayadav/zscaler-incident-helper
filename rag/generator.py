@@ -7,9 +7,8 @@ Two modes:
   log_analysis — user pasted logs or attached a screenshot; identify events + correlate with docs
 """
 
-from typing import Optional
 
-from llm.base import Message, LLMResponse
+from llm.base import LLMResponse, Message
 from llm.factory import get_provider
 from rag.retriever import SourceChunk
 
@@ -127,12 +126,12 @@ Documentation sources used (title + URL)."""
 def generate(
     query: str,
     chunks: list[SourceChunk],
-    provider_name: Optional[str] = None,
-    model: Optional[str] = None,
+    provider_name: str | None = None,
+    model: str | None = None,
     temperature: float = 0.3,
     max_tokens: int = 2048,
     mode: str = "doc_search",
-    original_images: Optional[list] = None,
+    original_images: list | None = None,
 ) -> LLMResponse:
     """
     Generate a structured incident resolution or log analysis.

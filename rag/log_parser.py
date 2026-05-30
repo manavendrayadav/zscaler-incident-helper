@@ -9,7 +9,6 @@ Used by api/main.py to:
 """
 
 import re
-from typing import Optional
 
 # ── Patterns ──────────────────────────────────────────────────────────────────
 
@@ -171,7 +170,7 @@ def extract_log_signals(text: str) -> str:
     return result if result else text[:200]
 
 
-def detect_product_from_logs(text: str) -> Optional[str]:
+def detect_product_from_logs(text: str) -> str | None:
     """
     Try to infer the Zscaler product from log content.
 

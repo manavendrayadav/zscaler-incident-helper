@@ -18,8 +18,8 @@ import argparse
 import json
 import sys
 import time
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -32,9 +32,9 @@ from pipeline.chunker import chunk_all_files
 from pipeline.embedder import embed_chunks
 from pipeline.indexer import (
     ensure_collection,
-    upsert_chunks,
     get_collection_stats,
     update_manifest_chunk_ids,
+    upsert_chunks,
 )
 
 console = Console()
@@ -50,7 +50,7 @@ def load_manifest() -> dict:
 
 def reset_collection():
     from qdrant_client import QdrantClient
-    from qdrant_client.models import Distance, VectorParams
+    from qdrant_client.models import VectorParams
 
     client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=120)
     existing = [c.name for c in client.get_collections().collections]

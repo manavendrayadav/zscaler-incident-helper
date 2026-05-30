@@ -8,8 +8,6 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 
 class TestConfigDefaults:
     """Test default values when no env vars are set."""

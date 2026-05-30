@@ -3,9 +3,9 @@ Pydantic models for the OpenAI-compatible FastAPI endpoints.
 OpenWebUI (and any OpenAI SDK client) connects to these endpoints without modification.
 """
 
-from typing import Any, Literal, Optional, Union
-from pydantic import BaseModel
+from typing import Literal, Union
 
+from pydantic import BaseModel
 
 # ── OpenAI-compatible request/response ──────────────────────────────────────
 
@@ -22,7 +22,7 @@ class ChatCompletionRequest(BaseModel):
     stream: bool = False
     # Custom RAG parameters — passed as extra fields by advanced users
     top_k: int = 5
-    product_filter: Optional[str] = None  # "zia" | "zpa" | "zdx" | None
+    product_filter: str | None = None  # "zia" | "zpa" | "zdx" | None
 
 
 class ChatCompletionChoice(BaseModel):

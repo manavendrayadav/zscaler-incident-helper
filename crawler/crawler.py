@@ -13,9 +13,7 @@ import hashlib
 import json
 import re
 import time
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Optional
+from datetime import UTC, datetime
 
 import httpx
 from rich.console import Console
@@ -78,7 +76,7 @@ def _crawl4ai_available(base_url: str) -> bool:
         return False
 
 
-def _extract_markdown_from_result(result: dict) -> Optional[str]:
+def _extract_markdown_from_result(result: dict) -> str | None:
     """
     Extract markdown from a Crawl4AI result object.
 
@@ -110,7 +108,7 @@ def _extract_markdown_from_result(result: dict) -> Optional[str]:
     return None
 
 
-def _crawl_via_crawl4ai_api(url: str, base_url: str, poll_interval: float = 2.0, timeout: float = 120.0) -> Optional[str]:
+def _crawl_via_crawl4ai_api(url: str, base_url: str, poll_interval: float = 2.0, timeout: float = 120.0) -> str | None:
     """
     Submit a URL to the Crawl4AI Docker REST API and return the markdown content.
 
@@ -210,10 +208,10 @@ def _crawl_via_crawl4ai_api(url: str, base_url: str, poll_interval: float = 2.0,
 
 # ── Playwright fallback (Python 3.14 compatible, no lxml needed) ─────────────
 
-async def _crawl_with_playwright(url: str) -> Optional[str]:
+async def _crawl_with_playwright(url: str) -> str | None:
     """Render page with headless Chromium, extract article HTML, convert to Markdown."""
-    from playwright.async_api import async_playwright
     from bs4 import BeautifulSoup
+    from playwright.async_api import async_playwright
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -291,7 +289,7 @@ def _html_to_markdown(element) -> str:
 
 # ── Unified single-URL crawl ─────────────────────────────────────────────────
 
-async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: bool) -> Optional[dict]:
+async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: bool) -> dict | None:
     try:
         markdown = None
 
@@ -314,7 +312,7 @@ async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: b
             return None
 
         title = _extract_title(markdown, url)
-        crawled_at = datetime.now(timezone.utc).isoformat()
+        crawled_at = datetime.now(UTC).isoformat()
         slug = _url_to_slug(url)
         file_path = cfg.RAW_DIR / f"{slug}.md"
 

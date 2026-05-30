@@ -5,14 +5,12 @@ Tests chunk_markdown_file() and the deterministic chunk ID guarantee.
 Creates temporary markdown files — no ML models or external services required.
 """
 
-import hashlib
 import uuid
 from pathlib import Path
 
 import pytest
 
 from pipeline.chunker import _parse_frontmatter, chunk_markdown_file
-
 
 # ── Frontmatter parser ────────────────────────────────────────────────────────
 
@@ -139,12 +137,10 @@ class TestChunkMarkdownFile:
         """Verify chunk IDs follow the documented MD5(url|section|idx) formula."""
         chunks = chunk_markdown_file(sample_md_file)
         for chunk in chunks:
-            url = chunk["metadata"]["url"]
-            section = chunk["metadata"]["section"]
-            # The idx is not stored, so we verify by checking the hash prefix
-            # instead of the exact value (idx is internal to chunker)
+            # The idx is not stored in payload, so we verify the UUID format only.
+            # Determinism is covered by test_deterministic_chunk_ids above.
             cid = chunk["chunk_id"]
-            assert len(cid) == 36  # UUID format
+            assert len(cid) == 36  # UUID format (8-4-4-4-12)
 
     def test_no_duplicate_chunk_ids(self, sample_md_file):
         chunks = chunk_markdown_file(sample_md_file)

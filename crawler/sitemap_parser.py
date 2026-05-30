@@ -6,8 +6,8 @@ Used for incremental crawling — only fetch pages that changed since last crawl
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
+
 import httpx
-import re
 
 SITEMAP_URL = "https://help.zscaler.com/sitemap.xml"
 

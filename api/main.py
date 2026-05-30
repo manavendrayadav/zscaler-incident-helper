@@ -14,30 +14,29 @@ import uuid
 from contextlib import asynccontextmanager
 
 import httpx
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.models import (
+    ChatCompletionChoice,
     ChatCompletionRequest,
     ChatCompletionResponse,
-    ChatCompletionChoice,
-    UsageInfo,
-    ModelListResponse,
-    ModelCard,
+    ConfigStatus,
     HealthResponse,
+    KnowledgeBaseStatus,
+    ModelCard,
+    ModelListResponse,
+    QdrantStatus,
+    ServicesStatus,
     StatsResponse,
     StatusResponse,
-    ServicesStatus,
-    KnowledgeBaseStatus,
-    QdrantStatus,
-    ConfigStatus,
+    UsageInfo,
 )
 from config import cfg
 from llm.factory import all_models, list_providers
 from pipeline.indexer import get_collection_stats
+from rag.generator import format_sources_footer, generate
 from rag.retriever import retrieve
-from rag.generator import generate, format_sources_footer
-
 
 # ── startup ──────────────────────────────────────────────────────────────────
 
@@ -239,7 +238,7 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
     3. Call the chosen LLM with a RAG-augmented prompt.
     4. Return an OpenAI-format response with sources appended.
     """
-    from rag.log_parser import is_log_content, extract_log_signals, detect_product_from_logs
+    from rag.log_parser import detect_product_from_logs, extract_log_signals, is_log_content
 
     query, images = _extract_last_user_message(req.messages)
     if not query and not images:

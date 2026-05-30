@@ -5,7 +5,6 @@ Stage 2: recursively split large sections to stay within embedding token limits.
 """
 
 import hashlib
-import re
 import uuid
 from pathlib import Path
 from typing import Any

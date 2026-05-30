@@ -29,7 +29,7 @@ def ensure_collection(client=None) -> None:
     existing = [c.name for c in client.get_collections().collections]
     if cfg.COLLECTION_NAME not in existing:
         if cfg.SPARSE_ENABLED:
-            from qdrant_client.models import SparseVectorParams, SparseIndexParams
+            from qdrant_client.models import SparseIndexParams, SparseVectorParams
             client.create_collection(
                 collection_name=cfg.COLLECTION_NAME,
                 vectors_config={
@@ -99,7 +99,7 @@ def upsert_chunks(
             if is_hybrid and batch_sparse is not None:
                 from qdrant_client.models import SparseVector
                 sw = batch_sparse[j]  # {token_id_str: weight}
-                indices = [int(k) for k in sw.keys()]
+                indices = [int(k) for k in sw]
                 values = [float(v) for v in sw.values()]
                 points.append(PointStruct(
                     id=cid,

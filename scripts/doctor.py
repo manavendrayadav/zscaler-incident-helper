@@ -14,7 +14,7 @@ import os
 import subprocess
 import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -22,7 +22,6 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
 
 # ── Bootstrap ────────────────────────────────────────────────────────────────
 
@@ -57,7 +56,7 @@ def check_docker_containers() -> dict[str, bool]:
         "zscaler-rag-api":   "rag-api",
         "zscaler-openwebui": "open-webui",
     }
-    result = {v: False for v in name_map.values()}
+    result = dict.fromkeys(name_map.values(), False)
     try:
         proc = subprocess.run(
             ["docker", "ps", "--format", "{{.Names}}"],
@@ -288,9 +287,9 @@ def render_knowledge_base(stats: dict) -> Panel:
         f"Pages indexed : [bold]{indexed}[/]"
         + ("" if indexed == total else f"  [yellow]({total - indexed} not yet ingested)[/]"),
         f"Pages stale   : [bold]{stale}[/]"
-        + (f"  [yellow](run make update)[/]" if stale else ""),
+        + ("  [yellow](run make update)[/]" if stale else ""),
         f"Raw .md files : [bold]{raw_files}[/]"
-        + (f"  [yellow](mismatch with manifest)[/]" if mismatch else ""),
+        + ("  [yellow](mismatch with manifest)[/]" if mismatch else ""),
     ]
 
     color = "green" if (indexed == total and stale == 0 and not mismatch) else "yellow"
@@ -325,7 +324,7 @@ def render_qdrant(http_ok: bool, product_counts: dict) -> Panel:
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> int:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     console.print()
     console.print(Panel(
         f"[bold white]Zscaler RAG  —  System Doctor[/]\n[dim]{now}[/]",
@@ -382,9 +381,7 @@ def main() -> int:
         warnings += 1
     if not containers.get("open-webui") or not http_results.get("open-webui", (False,))[0]:
         warnings += 1
-    if keys.get("groq") == "MISSING":
-        warnings += 1
-    elif not groq_valid:
+    if keys.get("groq") == "MISSING" or not groq_valid:
         warnings += 1
     if keys.get("openrouter") == "MISSING":
         warnings += 1

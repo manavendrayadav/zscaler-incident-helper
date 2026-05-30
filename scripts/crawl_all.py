@@ -17,14 +17,12 @@ Usage:
 import argparse
 import asyncio
 import hashlib
-import json
 import re
 import sys
 import time
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -41,15 +39,15 @@ from rich.progress import (
 
 from config import cfg
 from crawler.crawler import (
-    _html_to_markdown,
     _extract_title,
-    _make_frontmatter,
-    _url_to_slug,
+    _html_to_markdown,
     _load_manifest,
-    _save_manifest,
+    _make_frontmatter,
     _needs_crawl,
+    _save_manifest,
+    _url_to_slug,
 )
-from crawler.sitemap_parser import fetch_sitemap, SitemapEntry
+from crawler.sitemap_parser import SitemapEntry, fetch_sitemap
 
 console = Console(highlight=False, markup=True, emoji=False)
 
@@ -60,7 +58,7 @@ INGEST_EVERY = 100   # ingest into Qdrant every N successfully crawled pages
 
 async def _crawl_one(
     url: str, product: str, lastmod: str, pw, browser
-) -> Optional[dict]:
+) -> dict | None:
     """
     Crawl one page using a shared Playwright browser.
     Creates a fresh context+page, then closes them after use.
@@ -114,7 +112,7 @@ async def _crawl_one(
     title      = _extract_title(markdown, url)
     slug       = _url_to_slug(url)
     file_path  = cfg.RAW_DIR / f"{slug}.md"
-    crawled_at = datetime.now(timezone.utc).isoformat()
+    crawled_at = datetime.now(UTC).isoformat()
 
     cfg.RAW_DIR.mkdir(parents=True, exist_ok=True)
     file_path.write_text(
@@ -170,7 +168,7 @@ async def _run_crawl_async(
             headless=True,
             args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
         )
-        console.print(f"  [dim]Browser restarted (memory cleanup)[/dim]")
+        console.print("  [dim]Browser restarted (memory cleanup)[/dim]")
 
     with Progress(
         SpinnerColumn(),
@@ -243,7 +241,7 @@ async def _run_crawl_async(
 def _ingest_batch(urls: list[str], manifest: dict) -> int:
     from pipeline.chunker import chunk_files
     from pipeline.embedder import embed_chunks
-    from pipeline.indexer import ensure_collection, upsert_chunks, update_manifest_chunk_ids
+    from pipeline.indexer import ensure_collection, update_manifest_chunk_ids, upsert_chunks
 
     ensure_collection()
     files = []

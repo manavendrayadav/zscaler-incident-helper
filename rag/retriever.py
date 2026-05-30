@@ -68,11 +68,11 @@ def _search_dense(client, query_vector: list[float], limit: int, search_filter) 
 
 def _search_hybrid(client, query: dict, limit: int, search_filter) -> list[SourceChunk]:
     """Dense + sparse with RRF fusion via Qdrant's native hybrid search."""
-    from qdrant_client.models import Prefetch, FusionQuery, Fusion, SparseVector
+    from qdrant_client.models import Fusion, FusionQuery, Prefetch, SparseVector
 
     dense_vec = query["dense"]
     sparse_w = query["sparse"]
-    indices = [int(k) for k in sparse_w.keys()]
+    indices = [int(k) for k in sparse_w]
     values = [float(v) for v in sparse_w.values()]
 
     response = client.query_points(
@@ -104,7 +104,7 @@ def retrieve(
                         (e.g. "zia", "zpa", "zdx").
     """
     from qdrant_client import QdrantClient
-    from qdrant_client.models import Filter, FieldCondition, MatchValue
+    from qdrant_client.models import FieldCondition, Filter, MatchValue
 
     top_k = top_k or cfg.TOP_K
     query_embedding = embed_query(query)

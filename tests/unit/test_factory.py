@@ -5,8 +5,9 @@ Tests provider routing, error handling, and model listing.
 No network calls — all provider constructors are mocked.
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 class TestGetProvider:

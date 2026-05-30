@@ -5,7 +5,6 @@ Tests is_log_content(), extract_log_signals(), and detect_product_from_logs()
 using only stdlib — no ML models or external services required.
 """
 
-import pytest
 
 from rag.log_parser import detect_product_from_logs, extract_log_signals, is_log_content
 
