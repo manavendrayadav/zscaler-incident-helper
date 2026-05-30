@@ -17,7 +17,8 @@ console = Console(highlight=False, emoji=False)
 
 def _get_client():
     from qdrant_client import QdrantClient
-    return QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT)
+    # timeout=120s: default 5s is too short for large batch upserts (13k+ vectors)
+    return QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=120)
 
 
 def ensure_collection(client=None) -> None:
@@ -66,7 +67,7 @@ def upsert_chunks(
     chunks: list[dict[str, Any]],
     embeddings: Union[np.ndarray, dict],
     client=None,
-    batch_size: int = 64,
+    batch_size: int = 32,   # 32 keeps each HTTP call well under timeout; was 64
 ) -> list[str]:
     """
     Upsert chunks into Qdrant. Accepts dense-only (ndarray) or hybrid (dict) embeddings.
