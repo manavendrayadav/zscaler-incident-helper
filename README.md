@@ -1,9 +1,11 @@
 # Zscaler RAG Incident Helper
 
+[![CI](https://github.com/manavendrayadav/zscaler-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/manavendrayadav/zscaler-rag/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Docker](https://img.shields.io/badge/docker-compose-2496ED)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)
+![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000)
 
 A **self-hosted, portable RAG system** for Zscaler incident resolution. Describe an incident in plain English — get back structured Root Cause Analysis, Step-by-Step Resolution, Verification Steps, and source links, all grounded in real Zscaler documentation.
 
@@ -246,12 +248,33 @@ Then visit `http://localhost:3000`.
 
 ---
 
+## Operations Manual
+
+The full SOP — initial setup, daily operations, incident investigation, LLM provider configuration, and troubleshooting — is in a single document:
+
+**[docs/OPERATIONS.md](docs/OPERATIONS.md)**
+
+---
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add pages, providers, and submit PRs.
+
+Before your first PR:
+```bash
+pip install -e ".[dev]"   # installs dev deps (pytest, ruff, mypy, pre-commit)
+pre-commit install         # install hooks
+make ci                    # lint + typecheck + tests — must pass before PR
+```
+
+---
+
+## Security
+
+For vulnerability reports and data privacy guidance, see [SECURITY.md](SECURITY.md).
 
 ---
 
 ## License
 
-MIT © 2026
+MIT © 2026 Manav Yadav — see [LICENSE](LICENSE)

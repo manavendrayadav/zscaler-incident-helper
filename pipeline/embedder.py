@@ -22,7 +22,8 @@ def _is_bge_m3() -> bool:
     return cfg.SPARSE_ENABLED and cfg.EMBEDDING_MODEL == "BAAI/bge-m3"
 
 
-def get_model():
+def get_model() -> Any:
+    """Return the loaded embedding model (BGEM3FlagModel or SentenceTransformer)."""
     global _model
     if _model is None:
         if _is_bge_m3():

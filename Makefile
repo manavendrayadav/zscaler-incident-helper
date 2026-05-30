@@ -1,25 +1,42 @@
-.PHONY: setup crawl crawl-all update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config help
+.PHONY: setup crawl crawl-all update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit help
 
 help:
 	@echo ""
 	@echo "  Zscaler RAG Incident Helper"
 	@echo "  ─────────────────────────────────────────────────────────────"
-	@echo "  make setup         Install host Python deps + Playwright browser"
-	@echo "  make up            Start full Docker stack (all services)"
-	@echo "  make up-infra      Start only Qdrant + Crawl4AI (for crawling)"
-	@echo "  make crawl         Phase 1: crawl 5-10 Zscaler pages (initial)"
-	@echo "  make update        Incremental: crawl only new/changed pages"
-	@echo "  make ingest        Chunk + embed + index crawled pages into Qdrant"
-	@echo "  make down          Stop all Docker services"
-	@echo "  make logs          Tail rag-api logs"
-	@echo "  make logs-crawl4ai Tail crawl4ai logs"
-	@echo "  make shell         Open shell in rag-api container"
-	@echo "  make crawl-all     Crawl ALL 1800+ Zscaler pages + auto-ingest in batches"
-	@echo "  make reset-db      Wipe Qdrant volume and restart (fresh index)"
-	@echo "  make ollama-setup  Start Ollama + pull llama3.2 + llama3.2-vision"
-	@echo "  make ollama-vision Pull additional vision models (llava, moondream)"
-	@echo "  make doctor        Rich terminal health check of the full stack"
-	@echo "  make validate-config  Pre-flight check: API keys, Qdrant reachability, embedding dim"
+	@echo "  Infrastructure"
+	@echo "  make setup            Install host Python deps + Playwright browser"
+	@echo "  make up               Start full Docker stack (all services)"
+	@echo "  make up-infra         Start only Qdrant + Crawl4AI (for crawling)"
+	@echo "  make down             Stop all Docker services"
+	@echo "  make logs             Tail rag-api logs"
+	@echo "  make logs-crawl4ai    Tail crawl4ai logs"
+	@echo "  make shell            Open shell in rag-api container"
+	@echo "  make reset-db         Wipe Qdrant volume and restart (fresh index)"
+	@echo ""
+	@echo "  Knowledge base"
+	@echo "  make crawl            Phase 1: crawl 5-10 Zscaler pages (initial)"
+	@echo "  make crawl-all        Crawl ALL 1800+ Zscaler pages + auto-ingest"
+	@echo "  make update           Incremental: crawl only new/changed pages"
+	@echo "  make ingest           Chunk + embed + index crawled pages into Qdrant"
+	@echo ""
+	@echo "  Ollama (local/private LLM)"
+	@echo "  make ollama-setup     Start Ollama + pull llama3.2 + llama3.2-vision"
+	@echo "  make ollama-vision    Pull additional vision models (llava, moondream, qwen2-vl)"
+	@echo ""
+	@echo "  Health & validation"
+	@echo "  make doctor           Rich terminal health check of the full stack"
+	@echo "  make validate-config  Pre-flight check: API keys, Qdrant, embedding dim"
+	@echo ""
+	@echo "  Development"
+	@echo "  make lint             Check code style (ruff)"
+	@echo "  make format           Auto-format code (ruff format)"
+	@echo "  make typecheck        Type-check with mypy"
+	@echo "  make test             Run full test suite"
+	@echo "  make test-fast        Run unit tests only (no Docker needed)"
+	@echo "  make test-integration Run integration tests (requires running stack)"
+	@echo "  make ci               Run lint + typecheck + tests (full local CI)"
+	@echo "  make pre-commit       Run all pre-commit hooks on all files"
 	@echo ""
 
 setup:
@@ -95,3 +112,28 @@ ollama-vision:
 
 validate-config:
 	python scripts/validate_config.py
+
+# ── Development ───────────────────────────────────────────────────────────────
+
+lint:
+	ruff check .
+
+format:
+	ruff format .
+
+typecheck:
+	mypy . --ignore-missing-imports
+
+test:
+	pytest tests/ -v
+
+test-fast:
+	pytest tests/unit/ -v
+
+test-integration:
+	pytest tests/integration/ -v -m integration
+
+ci: lint typecheck test-fast
+
+pre-commit:
+	pre-commit run --all-files
