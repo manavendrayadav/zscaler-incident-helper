@@ -47,8 +47,8 @@ up:
 	@echo "Starting Qdrant first (health check takes 30-60s)..."
 	docker-compose up -d qdrant
 	@echo "Waiting for Qdrant to be healthy..."
-	@until docker inspect zih-qdrant --format "{{.State.Health.Status}}" 2>/dev/null | grep -q "healthy"; do sleep 3; done
-	@echo "Qdrant healthy — starting remaining services..."
+	python scripts/wait_healthy.py zih-qdrant 120
+	@echo "Starting remaining services..."
 	docker-compose up -d
 	@echo ""
 	@echo "  Services started. Run 'make logs' and wait for 'Application startup complete.'"
