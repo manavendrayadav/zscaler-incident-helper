@@ -44,9 +44,14 @@ setup:
 	playwright install chromium
 
 up:
+	@echo "Starting Qdrant first (health check takes 30-60s)..."
+	docker-compose up -d qdrant
+	@echo "Waiting for Qdrant to be healthy..."
+	@until docker inspect zscaler-qdrant --format "{{.State.Health.Status}}" 2>/dev/null | grep -q "healthy"; do sleep 3; done
+	@echo "Qdrant healthy — starting remaining services..."
 	docker-compose up -d
 	@echo ""
-	@echo "  Services starting (allow ~30s for crawl4ai to be ready)..."
+	@echo "  Services started. Run 'make logs' and wait for 'Application startup complete.'"
 	@echo "  OpenWebUI  → http://localhost:3000"
 	@echo "  RAG API    → http://localhost:8000"
 	@echo "  Qdrant     → http://localhost:6333"

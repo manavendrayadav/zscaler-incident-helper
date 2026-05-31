@@ -212,9 +212,20 @@ cd Zscalerhelper
 make up
 ```
 
-Docker restarts all containers in the correct dependency order. Allow 30–60 seconds before
-querying — OpenWebUI only becomes available after rag-api passes its health check,
-which itself waits for Qdrant.
+Docker starts containers in dependency order: Qdrant → rag-api → OpenWebUI.
+Allow 30–60 seconds for all services to become healthy.
+
+> **After a machine restart or Docker Desktop restart**, use the two-step start instead
+> of `make up` directly. Qdrant's health check takes 30–60 seconds to pass; if rag-api
+> starts before that, Docker marks the dependency as failed and the whole stack won't come up.
+>
+> ```bash
+> docker compose up -d qdrant          # start Qdrant first
+> docker ps                             # wait until zscaler-qdrant shows (healthy)
+> docker compose up -d                  # then start everything else
+> ```
+>
+> Once you see `Application startup complete.` in `make logs`, everything is ready.
 
 ### 3.2 Health check
 
@@ -591,6 +602,20 @@ docker compose restart rag-api   # apply changes
 **Always run `make doctor` first** — it surfaces 80% of issues instantly.
 
 ### 7.1 Service issues
+
+**`make up` fails with "dependency failed to start: container zscaler-qdrant is unhealthy"**
+
+This happens after a machine restart or Docker Desktop restart. Qdrant needs 30–60 seconds
+to pass its health check; `make up` starts rag-api too quickly before Qdrant is ready.
+
+Fix — start in two steps:
+```bash
+docker compose up -d qdrant          # start Qdrant first
+docker ps                             # wait until zscaler-qdrant shows (healthy)
+docker compose up -d                  # then start everything else
+```
+
+---
 
 **rag-api shows FAIL in doctor**
 
