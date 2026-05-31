@@ -234,6 +234,15 @@ The Zscaler sitemap contains **4,103 pages** across ZIA, ZPA, ZDX, and ZCC. The 
 Each team member needs:
 - Docker Desktop (any OS)
 - A Groq API key (free)
+- `make` — **built-in on Linux/macOS; Windows needs one extra step:**
+
+  | Windows option | How |
+  |----------------|-----|
+  | Chocolatey | `choco install make` |
+  | Git Bash | Use Git Bash terminal instead of PowerShell — `make` is included |
+  | WSL2 | Run commands inside WSL2 shell — `make` is built in |
+
+  > Can't install `make`? Use `python scripts/doctor.py` instead of `make doctor`, `docker compose up -d` instead of `make up`, etc. Full equivalents in [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 ```bash
 git clone <repo>

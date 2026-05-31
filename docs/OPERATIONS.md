@@ -34,6 +34,9 @@
 
 ### Common commands
 
+> **Windows users:** run these in Git Bash, WSL2, or PowerShell after `choco install make`.
+> See [§2 Initial Setup — `make` platform setup](#make--platform-setup) for details.
+
 ```bash
 make up               # Start everything
 make down             # Stop everything
@@ -60,7 +63,49 @@ When to update this document:
 
 **Audience:** New team member setting up the system for the first time.
 **Time required:** 15 minutes hands-on, ~4 hours background (bge-m3 embedding on CPU).
-**Prerequisites:** Docker Desktop installed, Git, Python 3.11+.
+
+**Prerequisites:**
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Docker Desktop | Latest | Required for all services |
+| Git | Any | |
+| Python | 3.11+ | For running scripts on the host |
+| `make` | Any | **See platform notes below** |
+
+### `make` — platform setup
+
+All project commands use `make` (e.g. `make up`, `make doctor`). It works out of the box on Linux and macOS but needs one extra step on Windows.
+
+**Linux / macOS**
+`make` is pre-installed. No action needed.
+
+**Windows (PowerShell) — choose one option:**
+
+| Option | Command | Notes |
+|--------|---------|-------|
+| **Chocolatey** (recommended) | `choco install make` | Install Chocolatey first: https://chocolatey.org/install |
+| **Scoop** | `scoop install make` | Install Scoop first: https://scoop.sh |
+| **Git Bash** | *(no install needed)* | Open Git Bash instead of PowerShell — `make` is bundled with Git for Windows |
+| **WSL2** | *(no install needed)* | Run commands inside the WSL2 shell (`wsl`) — `make` is built into every Linux distro |
+
+> **Quickest option if you have Git installed:** right-click the project folder → "Git Bash Here" and run all commands from there.
+
+**If you cannot install `make`**, every target has a direct equivalent:
+
+| `make` command | Direct command |
+|----------------|----------------|
+| `make up` | `docker compose up -d qdrant` then `docker compose up -d` |
+| `make down` | `docker compose down` |
+| `make doctor` | `python scripts/doctor.py` |
+| `make logs` | `docker compose logs -f rag-api` |
+| `make ingest` | `python scripts/ingest.py` |
+| `make update` | `python scripts/test_crawl.py --update` |
+| `make validate-config` | `python scripts/validate_config.py` |
+| `make test-fast` | `pytest tests/unit/ -v` |
+| `make lint` | `ruff check .` |
+
+---
 
 ### 2.1 Clone and configure
 
