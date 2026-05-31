@@ -67,6 +67,18 @@ def main() -> int:
         _check("OPENROUTER_API_KEY", "WARN", "not set — OpenRouter provider will not work")
         warnings += 1
 
+    if cfg.OPENAI_API_KEY:
+        _check("OPENAI_API_KEY", "PASS", "set")
+    else:
+        _check("OPENAI_API_KEY", "WARN", "not set — OpenAI provider will not work")
+        warnings += 1
+
+    if cfg.ANTHROPIC_API_KEY:
+        _check("ANTHROPIC_API_KEY", "PASS", "set")
+    else:
+        _check("ANTHROPIC_API_KEY", "WARN", "not set — Anthropic provider will not work")
+        warnings += 1
+
     # Ollama reachability
     try:
         r = httpx.get(f"{cfg.OLLAMA_BASE_URL}/api/tags", timeout=4)
@@ -76,14 +88,14 @@ def main() -> int:
         _check("OLLAMA_BASE_URL", "WARN", f"{cfg.OLLAMA_BASE_URL} not reachable — Ollama provider will not work")
         warnings += 1
 
-    at_least_one = cfg.GROQ_API_KEY or cfg.OPENROUTER_API_KEY
+    at_least_one = cfg.GROQ_API_KEY or cfg.OPENROUTER_API_KEY or cfg.OPENAI_API_KEY or cfg.ANTHROPIC_API_KEY
     try:
         httpx.get(f"{cfg.OLLAMA_BASE_URL}/api/tags", timeout=3)
         at_least_one = True
     except Exception:
         pass
     if not at_least_one:
-        _check("LLM provider", "FAIL", "no provider is configured — set GROQ_API_KEY or OLLAMA_BASE_URL")
+        _check("LLM provider", "FAIL", "no provider configured — set GROQ_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_BASE_URL")
         failures += 1
 
     # ── Qdrant ────────────────────────────────────────────────────────────────

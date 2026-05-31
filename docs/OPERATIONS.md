@@ -553,6 +553,8 @@ If the RAG system cannot find relevant documentation:
 
 | Provider | Where data goes | Use for | Requires |
 |----------|-----------------|---------|----------|
+| OpenAI | OpenAI cloud (US) | GPT-4o / GPT-4o-mini queries | `OPENAI_API_KEY` |
+| Anthropic | Anthropic cloud (US) | Claude Opus / Sonnet / Haiku queries | `ANTHROPIC_API_KEY` |
 | Groq | Groq cloud (US) | Fast text queries, no internal data | `GROQ_API_KEY` |
 | OpenRouter | OpenRouter cloud (US) | Wider model selection | `OPENROUTER_API_KEY` |
 | Ollama | **Local machine only** | Internal logs, screenshots, privacy mode | Docker + GPU optional |
@@ -575,7 +577,48 @@ DEFAULT_MODEL=llama-3.3-70b-versatile
 
 Get your key at `console.groq.com` — free tier is sufficient for team use.
 
-### 6.3 Ollama (local / private LLM)
+### 6.3 OpenAI
+
+```ini
+# .env
+OPENAI_API_KEY=sk-...
+```
+
+| OpenWebUI model ID | OpenAI model | Notes |
+|--------------------|-------------|-------|
+| `zih/openai-gpt-4o` | gpt-4o | Strongest reasoning |
+| `zih/openai-gpt-4o-mini` | gpt-4o-mini | Fast, cost-effective |
+| `zih/openai-gpt-4-turbo` | gpt-4-turbo | Long context (128k) |
+| `zih/openai-gpt-3-5-turbo` | gpt-3.5-turbo | Fastest, cheapest |
+
+Get your key at `platform.openai.com`. US-based — **never send internal logs or screenshots.**
+
+### 6.4 Anthropic
+
+```ini
+# .env
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+| OpenWebUI model ID | Anthropic model | Notes |
+|--------------------|----------------|-------|
+| `zih/anthropic-claude-opus-4-5` | claude-opus-4-5 | Most capable |
+| `zih/anthropic-claude-sonnet-4-5` | claude-sonnet-4-5 | Balanced speed/quality |
+| `zih/anthropic-claude-haiku-3-5` | claude-haiku-3-5 | Fastest, default |
+
+Get your key at `console.anthropic.com`. US-based (SOC 2 compliant) — **never send internal logs or screenshots.**
+
+### 6.5 OpenRouter
+
+OpenRouter aggregates many providers behind a single OpenAI-compatible API.
+
+```ini
+OPENROUTER_API_KEY=sk-or-...
+```
+
+Available models include llama, Mistral, Gemini, and Claude via aggregation. US-based. **Never use for internal data.**
+
+### 6.6 Ollama (local / private LLM)
 
 Ollama runs models entirely on your machine. **Nothing leaves your network.**
 Required for log analysis and screenshot investigation.

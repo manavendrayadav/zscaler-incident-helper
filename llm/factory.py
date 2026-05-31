@@ -10,14 +10,18 @@ _PROVIDERS: dict[str, type[BaseLLMProvider]] = {}
 
 def _register():
     global _PROVIDERS
+    from llm.anthropic_provider import AnthropicProvider
     from llm.groq_provider import GroqProvider
     from llm.ollama_provider import OllamaProvider
+    from llm.openai_provider import OpenAIProvider
     from llm.openrouter_provider import OpenRouterProvider
 
     _PROVIDERS = {
-        "groq": GroqProvider,
+        "groq":       GroqProvider,
         "openrouter": OpenRouterProvider,
-        "ollama": OllamaProvider,
+        "openai":     OpenAIProvider,
+        "anthropic":  AnthropicProvider,
+        "ollama":     OllamaProvider,
     }
 
 

@@ -87,10 +87,12 @@ def check_http(url: str, timeout: float = 4.0) -> tuple[bool, str]:
 
 
 def check_api_keys() -> dict[str, str]:
-    """Return {provider: 'SET'|'MISSING'} for each LLM provider."""
+    """Return {provider: 'SET'|'MISSING'} for each cloud LLM provider."""
     return {
         "groq":        "SET" if os.getenv("GROQ_API_KEY") else "MISSING",
         "openrouter":  "SET" if os.getenv("OPENROUTER_API_KEY") else "MISSING",
+        "openai":      "SET" if os.getenv("OPENAI_API_KEY") else "MISSING",
+        "anthropic":   "SET" if os.getenv("ANTHROPIC_API_KEY") else "MISSING",
     }
 
 
@@ -385,6 +387,10 @@ def main() -> int:
         warnings += 1
     if keys.get("openrouter") == "MISSING":
         warnings += 1
+    if keys.get("openai") == "MISSING":
+        warnings += 1
+    if keys.get("anthropic") == "MISSING":
+        warnings += 1
     if not ollama_ok:
         warnings += 1
     if not kb_stats.get("missing"):
@@ -395,7 +401,7 @@ def main() -> int:
         if kb_stats.get("file_mismatch"):
             warnings += 1
 
-    total_checks = 11   # 3 failure paths + 8 warning paths
+    total_checks = 13   # 3 failure paths + 10 warning paths
     passes = total_checks - failures - warnings
 
     if failures:

@@ -3,32 +3,24 @@ from openai import OpenAI
 from config import cfg
 from llm.base import BaseLLMProvider, LLMResponse, Message
 
-# Note: DeepSeek models are intentionally excluded from this list.
-# Even via OpenRouter, requests ultimately route to DeepSeek's servers in China —
-# unacceptable for a tool that processes internal corporate incident data.
-# See docs/DEVELOPER_GUIDE.md ADR-005 for the full rationale.
 MODELS = [
-    "anthropic/claude-sonnet-4-5",
-    "openai/gpt-4o-mini",
-    "meta-llama/llama-3.3-70b-instruct",
-    "google/gemini-flash-1.5",
-    "mistralai/mistral-nemo",
+    "gpt-4o",
+    "gpt-4o-mini",
+    "gpt-4-turbo",
+    "gpt-3.5-turbo",
 ]
 
 
-class OpenRouterProvider(BaseLLMProvider):
-    name = "openrouter"
+class OpenAIProvider(BaseLLMProvider):
+    name = "openai"
 
     def __init__(self):
-        self._client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=cfg.OPENROUTER_API_KEY,
-        )
+        self._client = OpenAI(api_key=cfg.OPENAI_API_KEY)
 
     def complete(
         self,
         messages: list[Message],
-        model: str = "meta-llama/llama-3.3-70b-instruct",
+        model: str = "gpt-4o-mini",
         temperature: float = 0.3,
         max_tokens: int = 2048,
     ) -> LLMResponse:
@@ -40,7 +32,7 @@ class OpenRouterProvider(BaseLLMProvider):
         )
         return LLMResponse(
             content=resp.choices[0].message.content,
-            model=model,
+            model=resp.model,
             provider=self.name,
             prompt_tokens=resp.usage.prompt_tokens if resp.usage else 0,
             completion_tokens=resp.usage.completion_tokens if resp.usage else 0,

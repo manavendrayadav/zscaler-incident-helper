@@ -26,10 +26,11 @@ Engineer types incident description
       |              |
       v              v
   Qdrant (:6333)    LLM Providers
-  vector store      ├── Groq   (llama-3.3-70b, free tier)
-                    ├── DeepSeek
-                    ├── OpenRouter
-                    └── Ollama (local, optional)
+  vector store      ├── Groq        (llama-3.3-70b, free tier)
+                    ├── OpenAI      (gpt-4o, gpt-4o-mini)
+                    ├── Anthropic   (claude-opus, claude-sonnet, claude-haiku)
+                    ├── OpenRouter  (aggregator — many models)
+                    └── Ollama      (local, optional, fully private)
       ^
       |  embed + upsert
   Ingest Pipeline
@@ -46,7 +47,7 @@ Engineer types incident description
 ## Features
 
 - **OpenAI-compatible API** — drop-in for any OpenAI SDK client or UI
-- **4 LLM providers** — Groq, DeepSeek, OpenRouter, Ollama (swap at query time)
+- **5 LLM providers** — Groq, OpenAI, Anthropic, OpenRouter, Ollama (swap at query time)
 - **Local embeddings** — `all-MiniLM-L6-v2` via sentence-transformers, zero API cost
 - **Incremental crawling** — manifest-based; only re-crawls new/changed pages
 - **Per-product filtering** — scope retrieval to ZIA, ZPA, or ZDX
@@ -91,19 +92,20 @@ Copy `.env.example` to `.env` and fill in your values.
 
 | Variable | Default | Description |
 |---|---|---|
-| `GROQ_API_KEY` | _(required)_ | Get free at [console.groq.com](https://console.groq.com) |
+| `GROQ_API_KEY` | _(optional)_ | Get free at [console.groq.com](https://console.groq.com) |
+| `OPENAI_API_KEY` | _(optional)_ | [platform.openai.com](https://platform.openai.com) |
+| `ANTHROPIC_API_KEY` | _(optional)_ | [console.anthropic.com](https://console.anthropic.com) |
 | `OPENROUTER_API_KEY` | _(optional)_ | [openrouter.ai](https://openrouter.ai) |
-| `DEEPSEEK_API_KEY` | _(optional)_ | [platform.deepseek.com](https://platform.deepseek.com) |
 | `OLLAMA_BASE_URL` | `http://ollama:11434` | Local Ollama endpoint |
 | `DEFAULT_PROVIDER` | `groq` | LLM provider used when none specified |
 | `DEFAULT_MODEL` | `llama-3.3-70b-versatile` | Model used when none specified |
 | `QDRANT_HOST` | `qdrant` | Qdrant hostname (Docker service name) |
 | `QDRANT_PORT` | `6333` | Qdrant port |
 | `COLLECTION_NAME` | `zscaler_docs` | Qdrant collection name |
-| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | sentence-transformers model |
+| `EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding model (hybrid dense+sparse) |
 | `CHUNK_SIZE` | `1500` | Max characters per chunk |
 | `TOP_K` | `5` | Chunks retrieved per query |
-| `API_KEY` | `zscaler-rag` | Bearer token for the RAG API |
+| `API_KEY` | `zih-api` | Bearer token for the RAG API |
 | `CRAWL4AI_BASE_URL` | `http://crawl4ai:11235` | Crawl4AI Docker service URL |
 
 ---
@@ -112,12 +114,13 @@ Copy `.env.example` to `.env` and fill in your values.
 
 | Provider | Models | Notes |
 |---|---|---|
-| **Groq** | `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b`, `gemma2-9b` | Free tier, ~500 tok/s |
-| **DeepSeek** | `deepseek-chat`, `deepseek-reasoner` | ~$0.14/M input tokens |
-| **OpenRouter** | `deepseek/deepseek-chat`, `anthropic/claude-sonnet-4-5`, `openai/gpt-4o-mini`, and more | Pay-per-use |
-| **Ollama** | `llama3.2`, `llama3.1`, `mistral`, `phi3`, `qwen2.5` | Local, private, needs GPU |
+| **Groq** | `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b`, `gemma2-9b` | Free tier, fast |
+| **OpenAI** | `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, `gpt-3.5-turbo` | Pay-per-use |
+| **Anthropic** | `claude-opus-4-5`, `claude-sonnet-4-5`, `claude-haiku-3-5` | Pay-per-use |
+| **OpenRouter** | `anthropic/claude-sonnet-4-5`, `openai/gpt-4o-mini`, `meta-llama/...`, and more | Pay-per-use aggregator |
+| **Ollama** | `llama3.2`, `llama3.1`, `mistral`, `phi3`, `qwen2.5` | **Fully local/private** |
 
-Model selector format in OpenWebUI: `zscaler-rag/{provider}-{model-slug}`
+Model selector format in OpenWebUI: `zih/{provider}-{model-slug}`
 
 ---
 
@@ -170,8 +173,10 @@ Services
 API Keys
  Provider    Key     Tested
  groq        SET     valid
+ openai      SET     --
+ anthropic   MISSING --
  openrouter  SET     --
- deepseek    MISSING --
+ ollama      http://localhost:11434   3 model(s) pulled
 
 Knowledge Base
  Pages crawled : 28     ZIA: 10  ZPA: 17  ZDX: 1
