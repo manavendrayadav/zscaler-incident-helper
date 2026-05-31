@@ -108,7 +108,8 @@ def retrieve(
 
     top_k = top_k or cfg.TOP_K
     query_embedding = embed_query(query)
-    client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT)
+    # timeout=30: default 5s is too short when bge-m3 embed_query takes 0.2-1s first
+    client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=30)
 
     search_filter = None
     if product_filter:
