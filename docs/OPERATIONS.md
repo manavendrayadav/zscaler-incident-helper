@@ -15,6 +15,8 @@
 5. [Incident Investigation Guide](#5-incident-investigation-guide)
 6. [LLM Provider Configuration](#6-llm-provider-configuration)
 7. [Troubleshooting](#7-troubleshooting)
+8. [Configuration Reference](#8-configuration-reference)
+9. [Hardware Requirements](#9-hardware-requirements)
 
 ---
 
@@ -753,3 +755,163 @@ Fix `.env`:
 ALLOWED_ORIGINS=http://localhost:3000
 ```
 Then `docker compose restart rag-api`.
+
+---
+
+## 8. Configuration Reference
+
+All configuration is via the `.env` file. Copy `.env.example` to `.env` before editing.
+Run `make validate-config` after any change.
+
+### LLM Provider Keys
+
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `GROQ_API_KEY` | — | console.groq.com; free tier; US servers — never for internal data |
+| `OPENROUTER_API_KEY` | — | openrouter.ai; pay-per-use; US servers — never for internal data |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Change to `http://ollama:11434` inside Docker |
+| `DEFAULT_PROVIDER` | `groq` | `groq` \| `openrouter` \| `ollama` |
+| `DEFAULT_MODEL` | `llama-3.3-70b-versatile` | Must match a model the default provider supports |
+
+### Qdrant Connection
+
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `QDRANT_HOST` | `localhost` | Use `qdrant` inside Docker (auto-set by docker-compose) |
+| `QDRANT_PORT` | `6333` | HTTP port; don't change unless you remapped it |
+| `COLLECTION_NAME` | `zscaler_docs` | Change for multiple isolated knowledge bases |
+
+### Embedding Parameters *(requires re-ingest on change)*
+
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `EMBEDDING_MODEL` | `BAAI/bge-m3` | MTEB 64.3; change to `all-MiniLM-L6-v2` for faster setup |
+| `EMBEDDING_DIM` | `1024` | **Must match model**: bge-m3=1024, MiniLM=384 |
+| `SPARSE_ENABLED` | `true` | Enables hybrid search; disable for dense-only (faster, less precise) |
+
+### RAG Tuning *(no re-ingest needed)*
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `TOP_K` | `5` | Chunks retrieved per query (1–20). Higher = richer context, slower |
+| `CHUNK_SIZE` | `1500` | Max chars per chunk (~500 tokens). Change requires re-ingest |
+| `CHUNK_OVERLAP` | `150` | Overlap between chunks (10% of CHUNK_SIZE). Change requires re-ingest |
+| `MIN_SCORE` | `0.3` | Min cross-encoder score to include a chunk. Lower = broader recall |
+
+### API Security
+
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `API_KEY` | `zscaler-rag` | **Change before team deployment.** Also update `OPENAI_API_KEY` in docker-compose.yml |
+| `ALLOWED_ORIGINS` | `http://localhost:3000` | Never use `*`. Comma-separated list for multiple UIs |
+
+### Scenario Presets
+
+**Fast setup, lower quality (developer testing):**
+```ini
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+EMBEDDING_DIM=384
+SPARSE_ENABLED=false
+TOP_K=3
+MIN_SCORE=0.2
+```
+
+**Maximum quality (with GPU):**
+```ini
+EMBEDDING_MODEL=BAAI/bge-m3
+EMBEDDING_DIM=1024
+SPARSE_ENABLED=true
+TOP_K=8
+MIN_SCORE=0.3
+```
+
+**Privacy-first (Ollama only):**
+```ini
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+DEFAULT_PROVIDER=ollama
+DEFAULT_MODEL=llama3.2
+```
+
+**Low-memory machine (8 GB RAM):**
+```ini
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+EMBEDDING_DIM=384
+SPARSE_ENABLED=false
+```
+
+---
+
+## 9. Hardware Requirements
+
+### Quick sizing guide
+
+| Use case | RAM | CPU | Disk |
+|----------|-----|-----|------|
+| Groq only (no Ollama) | 8 GB | 4 cores | 15 GB |
+| Ollama text models | 16 GB | 8 cores | 25 GB |
+| Ollama vision (qwen2-vl:7b) | 24 GB | 8 cores | 40 GB |
+| GPU acceleration | 16 GB + 8 GB VRAM | 4 cores | 40 GB |
+
+### RAM breakdown
+
+| Service | Idle | Peak |
+|---------|------|------|
+| rag-api (bge-m3) | 2.5 GB | 3.5 GB |
+| Qdrant | 0.5 GB | 1 GB |
+| OpenWebUI | 0.3 GB | 0.5 GB |
+| Ollama llama3.2:3b | 4 GB | 4 GB |
+| Ollama qwen2-vl:7b | 8 GB | 8 GB |
+
+### Disk breakdown
+
+| Component | Size |
+|-----------|------|
+| Docker images (all) | ~10 GB |
+| Crawled Markdown (`data/raw/`) | ~500 MB |
+| Qdrant vectors | ~2 GB |
+| Ollama models (optional) | 2–8 GB each |
+
+### Setup time
+
+| Step | CPU (min) | GPU |
+|------|-----------|-----|
+| `docker compose up` (first run) | 5–10 min | 5–10 min |
+| `make crawl-all` | 60–90 min | 60–90 min |
+| `make ingest` | **3–4 hours** | ~30 min |
+| rag-api startup (subsequent) | ~20s | ~20s |
+| Per-query latency (Groq) | 3–8s | 3–8s |
+| Per-query latency (Ollama) | 60–180s | 5–15s |
+
+### Windows / WSL2 notes
+
+Docker Desktop on Windows defaults to 50% of physical RAM. Increase if running Ollama:
+
+```ini
+# %USERPROFILE%\.wslconfig
+[wsl2]
+memory=12GB
+processors=8
+```
+
+Restart Docker Desktop after changing.
+
+### GPU acceleration (NVIDIA)
+
+1. Install NVIDIA Container Toolkit
+2. Uncomment the `deploy` block in `docker-compose.yml` under `ollama`
+3. Restart: `docker compose --profile local-llm up -d ollama`
+4. Verify: `docker exec zscaler-ollama nvidia-smi`
+
+Note: bge-m3 embedding runs on CPU regardless of GPU availability.
+
+### Network requirements
+
+| Destination | When needed |
+|-------------|------------|
+| `hub.docker.com`, `ghcr.io` | First `make up` only |
+| `help.zscaler.com` | `make crawl-all` and `make update` |
+| `api.groq.com` | Every Groq query |
+| `huggingface.co` | First `docker compose build rag-api` |
+
+Ollama queries use no outbound connections.

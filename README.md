@@ -258,7 +258,7 @@ Then visit `http://localhost:3000`.
 | **OS** | Any (Docker required) | Linux/macOS |
 | **Initial setup time** | ~4h (CPU embedding) | ~30 min (GPU) |
 
-See [docs/HARDWARE_REQUIREMENTS.md](docs/HARDWARE_REQUIREMENTS.md) for details and GPU setup.
+See [docs/OPERATIONS.md §9](docs/OPERATIONS.md#9-hardware-requirements) for details and GPU setup.
 
 ---
 
@@ -299,7 +299,7 @@ CONNECTOR_DOWN → CONNECTOR_UP
 | 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zscaler-rag` |
 | Groq call shows Zscaler block page | ZCC SSL inspection intercept | Use Ollama or add bypass in ZIA |
 
-See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for all error patterns.
+See [docs/OPERATIONS.md §7](docs/OPERATIONS.md#7-troubleshooting) for all error patterns.
 
 ---
 
@@ -307,19 +307,10 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for all error patterns.
 
 | Document | Audience | Purpose |
 |----------|----------|---------|
-| [Beginner's Guide](docs/BEGINNER_GUIDE.md) | New users | What is RAG? Why this beats ChatGPT? |
-| [Quick Start](docs/QUICK_START.md) | Experienced users | Commands only — fastest path to first query |
-| [Operations Manual](docs/OPERATIONS.md) | Operators | Setup, daily use, incident investigation |
-| [Architecture](docs/ARCHITECTURE.md) | Developers | How the system works internally |
-| [API Reference](docs/API.md) | Integrators | Every endpoint with code examples |
-| [Configuration Guide](docs/CONFIGURATION.md) | Admins | Every `.env` parameter explained |
-| [Examples](docs/EXAMPLES.md) | All users | Real queries, responses, and API usage |
-| [Troubleshooting](docs/TROUBLESHOOTING.md) | All users | Error messages and fixes |
-| [Glossary](docs/GLOSSARY.md) | All users | RAG, vector DB, and Zscaler terms |
-| [Hardware Requirements](docs/HARDWARE_REQUIREMENTS.md) | Infra teams | System specs, GPU setup, Windows notes |
-| [Development Guide](docs/DEVELOPMENT.md) | Contributors | Local setup, tests, VS Code config |
-| [Architecture Decisions](docs/adr/) | Contributors | Why key decisions were made |
-| [Roadmap](docs/ROADMAP.md) | All | Planned features |
+| [User Guide](docs/USER_GUIDE.md) | All users | RAG concepts, privacy guide, examples, glossary |
+| [Operations Manual](docs/OPERATIONS.md) | Operators | Setup, config, knowledge base, troubleshooting, hardware |
+| [Developer Guide](docs/DEVELOPER_GUIDE.md) | Developers | Architecture, API reference, dev setup, ADRs, roadmap |
+| [CHANGELOG](CHANGELOG.md) | All | Release history |
 
 ---
 
@@ -344,7 +335,7 @@ For vulnerability reports and data privacy guidance, see [SECURITY.md](SECURITY.
 
 ## Support
 
-See [SUPPORT.md](SUPPORT.md) for how to get help.
+Run `make doctor` first — it resolves 80% of issues. Then check [docs/OPERATIONS.md §7 Troubleshooting](docs/OPERATIONS.md). For bugs, open a [GitHub Issue](https://github.com/manavendrayadav/zscaler-rag/issues) with the output of `make doctor`.
 
 ---
 
