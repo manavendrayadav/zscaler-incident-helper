@@ -29,6 +29,16 @@ class SourceChunk:
 
 
 _reranker = None
+_qdrant_client = None
+
+
+def _get_qdrant_client():
+    """Return a module-level cached QdrantClient (avoids new connection pool per query)."""
+    global _qdrant_client
+    if _qdrant_client is None:
+        from qdrant_client import QdrantClient
+        _qdrant_client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=30)
+    return _qdrant_client
 
 
 def _get_reranker():
@@ -103,13 +113,11 @@ def retrieve(
         product_filter: Optional Zscaler product slug to restrict results
                         (e.g. "zia", "zpa", "zdx").
     """
-    from qdrant_client import QdrantClient
     from qdrant_client.models import FieldCondition, Filter, MatchValue
 
     top_k = top_k or cfg.TOP_K
     query_embedding = embed_query(query)
-    # timeout=30: default 5s is too short when bge-m3 embed_query takes 0.2-1s first
-    client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=30)
+    client = _get_qdrant_client()
 
     search_filter = None
     if product_filter:

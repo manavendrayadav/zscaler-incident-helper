@@ -18,18 +18,25 @@ import time
 def wait_healthy(container: str, timeout: int = 120) -> bool:
     interval = 3
     elapsed = 0
-    while elapsed < timeout:
-        result = subprocess.run(
-            ["docker", "inspect", container, "--format", "{{.State.Health.Status}}"],
-            capture_output=True,
-            text=True,
-        )
+    # Use <= so the final poll at elapsed==timeout is not skipped
+    while elapsed <= timeout:
+        try:
+            result = subprocess.run(
+                ["docker", "inspect", container, "--format", "{{.State.Health.Status}}"],
+                capture_output=True,
+                text=True,
+            )
+        except FileNotFoundError:
+            print("  ERROR: 'docker' command not found — is Docker Desktop installed and running?")
+            return False
+
         status = result.stdout.strip()
         if status == "healthy":
             print(f"  {container} is healthy.")
             return True
         print(f"  Waiting for {container}... (status={status or 'not found'}, {elapsed}s elapsed)")
-        time.sleep(interval)
+        if elapsed < timeout:
+            time.sleep(interval)
         elapsed += interval
 
     print(f"  ERROR: {container} did not become healthy within {timeout}s")

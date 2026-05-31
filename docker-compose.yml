@@ -65,8 +65,8 @@ services:
       # Singular form (legacy compat) + plural form (current OpenWebUI requirement)
       - OPENAI_API_BASE_URL=http://rag-api:8000/v1
       - OPENAI_API_BASE_URLS=http://rag-api:8000/v1
-      - OPENAI_API_KEY=zih-api
-      - OPENAI_API_KEYS=zih-api
+      - OPENAI_API_KEY=${API_KEY:-zih-api}
+      - OPENAI_API_KEYS=${API_KEY:-zih-api}
       - WEBUI_SECRET_KEY=change-me-in-production
     depends_on:
       rag-api:

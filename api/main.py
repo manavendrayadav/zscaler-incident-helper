@@ -78,8 +78,9 @@ def _parse_model_id(model_id: str) -> tuple[str, str]:
     Parse "zih/groq-llama3-70b" → ("groq", "llama-3.3-70b-versatile").
     Falls back to configured defaults if parsing fails.
     """
-    # Strip prefix
-    model_id = model_id.replace("zih/", "")
+    # Strip prefix — support both current "zih/" and legacy "zscaler-rag/" for
+    # backward compatibility with saved OpenWebUI conversations from before the rename
+    model_id = model_id.replace("zih/", "").replace("zscaler-rag/", "")
 
     providers = list_providers()
     for provider in providers:

@@ -395,7 +395,7 @@ def main() -> int:
         if kb_stats.get("file_mismatch"):
             warnings += 1
 
-    total_checks = 12
+    total_checks = 11   # 3 failure paths + 8 warning paths
     passes = total_checks - failures - warnings
 
     if failures:
