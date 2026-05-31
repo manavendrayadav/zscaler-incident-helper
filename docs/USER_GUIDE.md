@@ -195,18 +195,18 @@ Configuration changes to prevent recurrence.
 
 When you select a model, your query text is sent to that model's provider.
 
-### Groq (`zscaler-rag/groq-*`)
+### Groq (`zih/groq-*`)
 - ✅ Use for: General Zscaler questions with no internal data
 - ✅ Fast (~3–8 seconds), free tier
 - ❌ **Never use for:** Internal log output, employee names, system identifiers
 - 📍 Data goes to: Groq's US-based servers
 
-### OpenRouter (`zscaler-rag/openrouter-*`)
+### OpenRouter (`zih/openrouter-*`)
 - ✅ Use for: General questions when you need a specific model not on Groq
 - ❌ **Never use for:** Internal data
 - ⚠️ Some models route to non-US providers — check the specific model
 
-### Ollama (`zscaler-rag/ollama-*`)
+### Ollama (`zih/ollama-*`)
 - ✅ **100% private** — runs on your machine, zero data leaves your network
 - ✅ Use for: Everything, especially internal logs and screenshots
 - ❌ Slower (~60–180s on CPU, ~5–15s with GPU)
@@ -219,13 +219,13 @@ Is the query content sensitive?
 (contains log output, IP addresses, system names, employee data)
     │
     ├─ YES → Use Ollama:  make ollama-setup
-    │         Select: zscaler-rag/ollama-llama3-2
+    │         Select: zih/ollama-llama3-2
     │
     └─ NO  → Use Groq:
-              Select: zscaler-rag/groq-llama-3-3-70b-versatile
+              Select: zih/groq-llama-3-3-70b-versatile
 ```
 
-**For screenshots:** Always use an Ollama vision model (`make ollama-vision`, then select `zscaler-rag/ollama-qwen2-vl:7b`).
+**For screenshots:** Always use an Ollama vision model (`make ollama-vision`, then select `zih/ollama-qwen2-vl:7b`).
 
 ---
 
@@ -329,7 +329,7 @@ SSL inspection causing authentication failures
 **Equivalent via API:**
 ```json
 {
-  "model": "zscaler-rag/groq-llama-3-3-70b-versatile",
+  "model": "zih/groq-llama-3-3-70b-versatile",
   "messages": [{"role": "user", "content": "SSL inspection causing SAML auth failures"}],
   "product_filter": "zia"
 }
@@ -351,7 +351,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="zscaler-rag/groq-llama-3-3-70b-versatile",
+    model="zih/groq-llama-3-3-70b-versatile",
     messages=[{"role": "user", "content": "ZPA App Connector AUTH_FAILED causes?"}],
     temperature=0.3,
     extra_body={"top_k": 5, "product_filter": "zpa"}
@@ -364,8 +364,8 @@ print(response.choices[0].message.content)
 import requests
 response = requests.post(
     "http://localhost:8000/v1/chat/completions",
-    headers={"Authorization": "Bearer zscaler-rag"},
-    json={"model": "zscaler-rag/groq-llama-3-3-70b-versatile",
+    headers={"Authorization": "Bearer zih-api"},
+    json={"model": "zih/groq-llama-3-3-70b-versatile",
           "messages": [{"role": "user", "content": "ZIA SSL bypass for M365?"}],
           "top_k": 5},
     timeout=30
@@ -376,9 +376,9 @@ print(response.json()["choices"][0]["message"]["content"])
 ### cURL
 ```bash
 curl -s -X POST http://localhost:8000/v1/chat/completions \
-  -H "Authorization: Bearer zscaler-rag" \
+  -H "Authorization: Bearer zih-api" \
   -H "Content-Type: application/json" \
-  -d '{"model":"zscaler-rag/groq-llama-3-3-70b-versatile",
+  -d '{"model":"zih/groq-llama-3-3-70b-versatile",
        "messages":[{"role":"user","content":"ZIA PAC file for split tunneling"}],
        "top_k":5}' | python -m json.tool
 ```
@@ -391,7 +391,7 @@ For complete API documentation (all endpoints, error codes, vision format): see 
 
 **Prerequisite:** `make ollama-vision` (pulls qwen2-vl:7b, llava, moondream)
 
-1. Select model: `zscaler-rag/ollama-qwen2-vl:7b`
+1. Select model: `zih/ollama-qwen2-vl:7b`
 2. Click the **paperclip** icon
 3. Attach your screenshot
 4. Ask: "What error is shown and what does it mean?"
@@ -457,7 +457,7 @@ The vision model reads text from the screenshot, the RAG system retrieves releva
 
 ## 17. Glossary
 
-Alphabetical reference for every technical term. If a term isn't here, open a [GitHub Issue](https://github.com/manavendrayadav/zscaler-rag/issues).
+Alphabetical reference for every technical term. If a term isn't here, open a [GitHub Issue](https://github.com/manavendrayadav/zscaler-incident-helper/issues).
 
 ---
 

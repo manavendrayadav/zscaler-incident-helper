@@ -15,7 +15,7 @@ class ChatMessageRequest(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: str = "zscaler-rag/groq-llama3-70b"
+    model: str = "zih/groq-llama3-70b"
     messages: list[ChatMessageRequest]
     temperature: float = 0.3
     max_tokens: int = 2048
@@ -52,7 +52,7 @@ class ModelCard(BaseModel):
     id: str
     object: str = "model"
     created: int = 0
-    owned_by: str = "zscaler-rag"
+    owned_by: str = "zscaler-incident-helper"
 
 
 class ModelListResponse(BaseModel):

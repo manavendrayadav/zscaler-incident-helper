@@ -1,5 +1,5 @@
 [project]
-name = "zscaler-rag"
+name = "zscaler-incident-helper"
 version = "1.0.0"
 description = "AI-powered Zscaler incident resolution tool using RAG over official documentation"
 readme = "README.md"
@@ -18,9 +18,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/manavendrayadav/zscaler-rag"
-Issues = "https://github.com/manavendrayadav/zscaler-rag/issues"
-Changelog = "https://github.com/manavendrayadav/zscaler-rag/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/manavendrayadav/zscaler-incident-helper"
+Issues = "https://github.com/manavendrayadav/zscaler-incident-helper/issues"
+Changelog = "https://github.com/manavendrayadav/zscaler-incident-helper/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [

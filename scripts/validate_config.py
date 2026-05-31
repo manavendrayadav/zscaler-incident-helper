@@ -120,7 +120,7 @@ def main() -> int:
     # ── Security checks ────────────────────────────────────────────────────────
     console.print("\n[bold]Security[/]")
 
-    if cfg.API_KEY == "zscaler-rag":
+    if cfg.API_KEY == "zih-api":
         _check("API_KEY", "WARN", "using default value — change before team deployment")
         warnings += 1
     else:

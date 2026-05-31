@@ -2,10 +2,10 @@
 OpenAI-compatible FastAPI service for Zscaler RAG.
 OpenWebUI connects to /v1/chat/completions exactly as it would to the OpenAI API.
 
-Model naming convention:  zscaler-rag/{provider}-{model-slug}
-  e.g.  zscaler-rag/groq-llama3-70b
-        zscaler-rag/openrouter-deepseek-chat
-        zscaler-rag/ollama-llama3
+Model naming convention:  zih/{provider}-{model-slug}
+  e.g.  zih/groq-llama3-70b
+        zih/openrouter-claude-3-5-sonnet
+        zih/ollama-llama3
 """
 
 import json
@@ -75,11 +75,11 @@ def verify_api_key(authorization: str = Header(default="")):
 
 def _parse_model_id(model_id: str) -> tuple[str, str]:
     """
-    Parse "zscaler-rag/groq-llama3-70b" → ("groq", "llama-3.3-70b-versatile").
+    Parse "zih/groq-llama3-70b" → ("groq", "llama-3.3-70b-versatile").
     Falls back to configured defaults if parsing fails.
     """
     # Strip prefix
-    model_id = model_id.replace("zscaler-rag/", "")
+    model_id = model_id.replace("zih/", "")
 
     providers = list_providers()
     for provider in providers:
@@ -224,7 +224,7 @@ def list_models(_=Depends(verify_api_key)):
         for model in models:
             slug = model.replace(".", "-").replace("/", "-").replace("_", "-")
             cards.append(
-                ModelCard(id=f"zscaler-rag/{provider}-{slug}", created=ts)
+                ModelCard(id=f"zih/{provider}-{slug}", created=ts)
             )
     return ModelListResponse(data=cards)
 

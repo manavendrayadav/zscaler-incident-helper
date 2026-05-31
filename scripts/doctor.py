@@ -51,10 +51,10 @@ SKIP  = "[dim]--[/]"
 def check_docker_containers() -> dict[str, bool]:
     """Return {service_name: is_running} for all known containers."""
     name_map = {
-        "zscaler-qdrant":   "qdrant",
-        "zscaler-crawl4ai":  "crawl4ai",
-        "zscaler-rag-api":   "rag-api",
-        "zscaler-openwebui": "open-webui",
+        "zih-qdrant":    "qdrant",
+        "zih-crawl4ai":  "crawl4ai",
+        "zih-api":       "rag-api",
+        "zih-openwebui": "open-webui",
     }
     result = dict.fromkeys(name_map.values(), False)
     try:
@@ -212,10 +212,10 @@ def render_services(containers: dict[str, bool], http: dict[str, tuple[bool, str
     t.add_column("Status",    min_width=8)
 
     rows = [
-        ("qdrant",     "zscaler-qdrant",   f"{QDRANT_URL}/health",   False),
-        ("crawl4ai",   "zscaler-crawl4ai", f"{CRAWL4AI_URL}/health", True),   # optional
-        ("rag-api",    "zscaler-rag-api",  f"{RAG_API_URL}/health",  False),
-        ("open-webui", "zscaler-openwebui", OPENWEBUI_URL,            True),   # optional
+        ("qdrant",     "zih-qdrant",    f"{QDRANT_URL}/health",   False),
+        ("crawl4ai",   "zih-crawl4ai",  f"{CRAWL4AI_URL}/health", True),   # optional
+        ("rag-api",    "zih-api",       f"{RAG_API_URL}/health",  False),
+        ("open-webui", "zih-openwebui", OPENWEBUI_URL,            True),   # optional
     ]
 
     for service, container, url, optional in rows:

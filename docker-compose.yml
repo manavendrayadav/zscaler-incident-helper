@@ -1,7 +1,7 @@
 services:
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: zscaler-qdrant
+    container_name: zih-qdrant
     ports:
       - "6333:6333"
       - "6334:6334"
@@ -16,7 +16,7 @@ services:
 
   crawl4ai:
     image: unclecode/crawl4ai:latest
-    container_name: zscaler-crawl4ai
+    container_name: zih-crawl4ai
     ports:
       - "11235:11235"
     environment:
@@ -35,7 +35,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: zscaler-rag-api
+    container_name: zih-api
     ports:
       - "8000:8000"
     env_file: .env
@@ -58,15 +58,15 @@ services:
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
-    container_name: zscaler-openwebui
+    container_name: zih-openwebui
     ports:
       - "3000:8080"
     environment:
       # Singular form (legacy compat) + plural form (current OpenWebUI requirement)
       - OPENAI_API_BASE_URL=http://rag-api:8000/v1
       - OPENAI_API_BASE_URLS=http://rag-api:8000/v1
-      - OPENAI_API_KEY=zscaler-rag
-      - OPENAI_API_KEYS=zscaler-rag
+      - OPENAI_API_KEY=zih-api
+      - OPENAI_API_KEYS=zih-api
       - WEBUI_SECRET_KEY=change-me-in-production
     depends_on:
       rag-api:
@@ -80,7 +80,7 @@ services:
   # use ollama with a vision-capable model (llama3.2-vision, llava, moondream).
   ollama:
     image: ollama/ollama
-    container_name: zscaler-ollama
+    container_name: zih-ollama
     ports:
       - "11434:11434"
     volumes:

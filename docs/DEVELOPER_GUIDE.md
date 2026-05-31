@@ -66,11 +66,11 @@ RAG API (FastAPI)
 
 | Service | Container | Port | Role |
 |---------|-----------|------|------|
-| **OpenWebUI** | `zscaler-openwebui` | 3000 | Chat interface. Multi-user, conversation history, model switching. Treats the RAG API as an OpenAI-compatible backend — no code changes needed. |
-| **RAG API** | `zscaler-rag-api` | 8000 | Core service. FastAPI. Handles auth, routing, embedding, retrieval, generation, OpenAI-format responses. |
-| **Qdrant** | `zscaler-qdrant` | 6333 | Vector database. ~13,800 chunk embeddings with metadata. Dense, sparse, and hybrid search. |
-| **Crawl4AI** | `zscaler-crawl4ai` | 11235 | Headless browser crawler. Accepts URLs via HTTP, returns cleaned Markdown. Used only during knowledge base setup. |
-| **Ollama** (optional) | `zscaler-ollama` | 11434 | Local LLM runtime. Started with `make ollama-setup` (Docker profile `local-llm`). |
+| **OpenWebUI** | `zih-openwebui` | 3000 | Chat interface. Multi-user, conversation history, model switching. Treats the RAG API as an OpenAI-compatible backend — no code changes needed. |
+| **RAG API** | `zih-api` | 8000 | Core service. FastAPI. Handles auth, routing, embedding, retrieval, generation, OpenAI-format responses. |
+| **Qdrant** | `zih-qdrant` | 6333 | Vector database. ~13,800 chunk embeddings with metadata. Dense, sparse, and hybrid search. |
+| **Crawl4AI** | `zih-crawl4ai` | 11235 | Headless browser crawler. Accepts URLs via HTTP, returns cleaned Markdown. Used only during knowledge base setup. |
+| **Ollama** (optional) | `zih-ollama` | 11434 | Local LLM runtime. Started with `make ollama-setup` (Docker profile `local-llm`). |
 
 ### Startup dependency chain
 
@@ -92,8 +92,8 @@ Crawl4AI starts independently — only needed for crawl operations.
 
 ```
 POST /v1/chat/completions
-Authorization: Bearer zscaler-rag
-{"model": "zscaler-rag/groq-llama-3-3-70b-versatile",
+Authorization: Bearer zih-api
+{"model": "zih/groq-llama-3-3-70b-versatile",
  "messages": [{"role": "user", "content": "ZPA tunnel down causes?"}]}
 ```
 
@@ -286,7 +286,7 @@ All `/v1/*` endpoints require `Authorization: Bearer <API_KEY>`. Public: `/healt
 
 ```bash
 curl http://localhost:8000/v1/models                               # 401
-curl -H "Authorization: Bearer zscaler-rag" http://localhost:8000/v1/models  # 200
+curl -H "Authorization: Bearer zih-api" http://localhost:8000/v1/models  # 200
 ```
 
 Change by setting `API_KEY` in `.env`. Also update `OPENAI_API_KEY` in `docker-compose.yml` if using OpenWebUI.
@@ -316,7 +316,7 @@ Returns all available model IDs in OpenAI format.
 **Request:**
 ```json
 {
-  "model": "zscaler-rag/groq-llama-3-3-70b-versatile",
+  "model": "zih/groq-llama-3-3-70b-versatile",
   "messages": [{"role": "user", "content": "ZPA App Connector AUTH_FAILED"}],
   "temperature": 0.3,
   "max_tokens": 2048,
@@ -358,14 +358,14 @@ Pattern: `zscaler-rag/{provider}-{model-slug}` (`.`, `/`, `_` → `-`)
 
 | Model ID | Provider | Notes |
 |----------|----------|-------|
-| `zscaler-rag/groq-llama-3-3-70b-versatile` | Groq | Best quality, default |
-| `zscaler-rag/groq-llama-3-1-8b-instant` | Groq | Fastest |
-| `zscaler-rag/groq-mixtral-8x7b-32768` | Groq | Long context (32k) |
-| `zscaler-rag/openrouter-*` | OpenRouter | Requires key |
-| `zscaler-rag/ollama-llama3-2` | Ollama | Local text |
-| `zscaler-rag/ollama-llama3-2-vision` | Ollama | Local vision |
-| `zscaler-rag/ollama-llava` | Ollama | Local vision |
-| `zscaler-rag/ollama-qwen2-vl-7b` | Ollama | Best vision (DocVQA 93.1) |
+| `zih/groq-llama-3-3-70b-versatile` | Groq | Best quality, default |
+| `zih/groq-llama-3-1-8b-instant` | Groq | Fastest |
+| `zih/groq-mixtral-8x7b-32768` | Groq | Long context (32k) |
+| `zih/openrouter-*` | OpenRouter | Requires key |
+| `zih/ollama-llama3-2` | Ollama | Local text |
+| `zih/ollama-llama3-2-vision` | Ollama | Local vision |
+| `zih/ollama-llava` | Ollama | Local vision |
+| `zih/ollama-qwen2-vl-7b` | Ollama | Best vision (DocVQA 93.1) |
 
 Use `GET /v1/models` for the live authoritative list.
 
@@ -384,7 +384,7 @@ client = OpenAI(base_url="http://localhost:8000/v1", api_key="zscaler-rag")
 b64 = base64.b64encode(Path("screenshot.png").read_bytes()).decode()
 
 response = client.chat.completions.create(
-    model="zscaler-rag/ollama-qwen2-vl-7b",
+    model="zih/ollama-qwen2-vl-7b",
     messages=[{
         "role": "user",
         "content": [
@@ -402,8 +402,8 @@ Privacy: Ollama processes images locally — nothing leaves your machine.
 ## 13. Local setup
 
 ```bash
-git clone https://github.com/manavendrayadav/zscaler-rag.git
-cd zscaler-rag
+git clone https://github.com/manavendrayadav/zscaler-incident-helper.git
+cd zscaler-incident-helper
 
 python -m venv .venv
 source .venv/bin/activate        # Linux/Mac
@@ -607,7 +607,7 @@ Remaining providers: Groq (US, SOC 2), OpenRouter (US), Ollama (local-only).
 
 ## 20. Roadmap
 
-Community input welcome — open a [GitHub Discussion](https://github.com/manavendrayadav/zscaler-rag/discussions).
+Community input welcome — open a [GitHub Discussion](https://github.com/manavendrayadav/zscaler-incident-helper/discussions).
 
 | Version | Target | Key features |
 |---------|--------|-------------|

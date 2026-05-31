@@ -52,11 +52,11 @@ class TestApiKeyAuth:
         Sending the raw key without the prefix also works (the replace is a no-op).
         This is intentional: clients using the raw key string still authenticate.
         """
-        resp = client.get("/v1/models", headers={"Authorization": "zscaler-rag"})
+        resp = client.get("/v1/models", headers={"Authorization": "zih-api"})
         assert resp.status_code == 200
 
     def test_correct_key_returns_200(self, client):
-        resp = client.get("/v1/models", headers={"Authorization": "Bearer zscaler-rag"})
+        resp = client.get("/v1/models", headers={"Authorization": "Bearer zih-api"})
         assert resp.status_code == 200
 
     def test_health_endpoint_requires_no_auth(self, client):
@@ -65,7 +65,7 @@ class TestApiKeyAuth:
         assert resp.status_code == 200
 
     def test_models_response_structure(self, client):
-        resp = client.get("/v1/models", headers={"Authorization": "Bearer zscaler-rag"})
+        resp = client.get("/v1/models", headers={"Authorization": "Bearer zih-api"})
         body = resp.json()
         assert "data" in body
         assert isinstance(body["data"], list)
@@ -76,7 +76,7 @@ class TestApiKeyAuth:
         resp = client.post(
             "/v1/chat/completions",
             json={
-                "model": "zscaler-rag/groq-llama-3-1-8b-instant",
+                "model": "zih/groq-llama-3-1-8b-instant",
                 "messages": [{"role": "user", "content": "Hi"}],
             },
         )

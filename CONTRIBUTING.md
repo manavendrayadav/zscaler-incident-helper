@@ -5,7 +5,7 @@ Thank you for contributing to the Zscaler RAG Incident Helper.
 ## Quick start
 
 ```bash
-git clone <repo> && cd Zscalerhelper
+git clone <repo> && cd zscaler-incident-helper
 pip install -e ".[dev]"   # runtime + pytest, ruff, mypy, pre-commit
 pre-commit install
 cp .env.example .env      # set GROQ_API_KEY

@@ -31,7 +31,7 @@ class Config:
     CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "150"))
 
     # API
-    API_KEY: str = os.getenv("API_KEY", "zscaler-rag")
+    API_KEY: str = os.getenv("API_KEY", "zih-api")
     ALLOWED_ORIGINS: list[str] = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
     # RAG quality

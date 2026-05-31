@@ -111,7 +111,7 @@ All project commands use `make` (e.g. `make up`, `make doctor`). It works out of
 
 ```bash
 git clone <repo-url> Zscalerhelper
-cd Zscalerhelper
+cd zscaler-incident-helper
 cp .env.example .env
 ```
 
@@ -148,10 +148,10 @@ This starts four services:
 
 | Service | Container | Port | Role |
 |---------|-----------|------|------|
-| Qdrant | zscaler-qdrant | 6333 | Vector database |
-| Crawl4AI | zscaler-crawl4ai | 11235 | Headless browser crawler |
-| RAG API | zscaler-rag-api | 8000 | OpenAI-compatible query endpoint |
-| OpenWebUI | zscaler-openwebui | 3000 | Chat interface |
+| Qdrant | zih-qdrant | 6333 | Vector database |
+| Crawl4AI | zih-crawl4ai | 11235 | Headless browser crawler |
+| RAG API | zih-api | 8000 | OpenAI-compatible query endpoint |
+| OpenWebUI | zih-openwebui | 3000 | Chat interface |
 
 Wait 30–60 seconds for all services to initialise. Check with:
 
@@ -201,7 +201,7 @@ When finished: `make doctor` should show ~13,800 chunks in Qdrant.
 1. Navigate to `http://localhost:3000`
 2. Register the first account — this account becomes admin
 3. OpenWebUI is pre-configured to talk to the RAG API via `docker-compose.yml`
-4. In the model selector, choose any `zscaler-rag/groq-*` model
+4. In the model selector, choose any `zih/groq-*` model
 5. Send a test query to verify end-to-end operation
 
 **Test query:**
@@ -253,7 +253,7 @@ Result:    ALL SYSTEMS GO
 ### 3.1 Starting the stack
 
 ```bash
-cd Zscalerhelper
+cd zscaler-incident-helper
 make up
 ```
 
@@ -266,7 +266,7 @@ Allow 30–60 seconds for all services to become healthy.
 >
 > ```bash
 > docker compose up -d qdrant          # start Qdrant first
-> docker ps                             # wait until zscaler-qdrant shows (healthy)
+> docker ps                             # wait until zih-qdrant shows (healthy)
 > docker compose up -d                  # then start everything else
 > ```
 >
@@ -309,13 +309,13 @@ Exit with Ctrl+C.
 curl -s http://localhost:8000/v1/models
 
 # Should return model list (valid auth)
-curl -s -H "Authorization: Bearer zscaler-rag" http://localhost:8000/v1/models
+curl -s -H "Authorization: Bearer zih-api" http://localhost:8000/v1/models
 
 # Full RAG query
 curl -s -X POST http://localhost:8000/v1/chat/completions \
-  -H "Authorization: Bearer zscaler-rag" \
+  -H "Authorization: Bearer zih-api" \
   -H "Content-Type: application/json" \
-  -d '{"model":"zscaler-rag/groq-llama-3-3-70b-versatile",
+  -d '{"model":"zih/groq-llama-3-3-70b-versatile",
        "messages":[{"role":"user","content":"ZPA tunnel down causes"}]}' \
   | python -m json.tool
 ```
@@ -442,7 +442,7 @@ To query with a product filter in OpenWebUI:
 Or via the API:
 ```json
 {
-  "model": "zscaler-rag/groq-llama-3-3-70b-versatile",
+  "model": "zih/groq-llama-3-3-70b-versatile",
   "messages": [{"role": "user", "content": "App Connector TUNNEL_DOWN"}],
   "product_filter": "zpa"
 }
@@ -470,7 +470,7 @@ See [§6.3 Ollama Setup](#63-ollama-localprivate-llm) to enable Ollama before ha
 ### 5.1 Mode 1: General question (no internal data)
 
 1. Open `http://localhost:3000`
-2. Select a cloud model (e.g. `zscaler-rag/groq-llama-3-3-70b-versatile`)
+2. Select a cloud model (e.g. `zih/groq-llama-3-3-70b-versatile`)
 3. Ask your question in plain English
 
 **Good query patterns:**
@@ -492,7 +492,7 @@ What ZIA policy settings cause AUTH_FAILED for SAML users?
 
 **Privacy requirement:** Switch to an Ollama model first.
 
-1. In OpenWebUI, select `zscaler-rag/ollama-llama3-2` (or any `ollama-*` model)
+1. In OpenWebUI, select `zih/ollama-llama3-2` (or any `ollama-*` model)
 2. Paste the raw log block directly into the chat
 
 The system auto-detects log content and switches to log-analysis mode, which:
@@ -520,7 +520,7 @@ If auto-detection doesn't trigger, prepend `[log analysis]` to force log mode.
 make ollama-vision   # pulls llava, moondream, qwen2-vl:7b
 ```
 
-1. In OpenWebUI, select `zscaler-rag/ollama-qwen2-vl:7b`
+1. In OpenWebUI, select `zih/ollama-qwen2-vl:7b`
 2. Click the paperclip icon and attach your screenshot
 3. Type your question, or send the image — the system analyses it automatically
 
@@ -568,10 +568,10 @@ DEFAULT_MODEL=llama-3.3-70b-versatile
 
 | OpenWebUI model ID | Groq model | Notes |
 |--------------------|------------|-------|
-| `zscaler-rag/groq-llama-3-3-70b-versatile` | llama-3.3-70b-versatile | Best quality, default |
-| `zscaler-rag/groq-llama-3-1-8b-instant` | llama-3.1-8b-instant | Fastest |
-| `zscaler-rag/groq-mixtral-8x7b-32768` | mixtral-8x7b-32768 | Long context (32k tokens) |
-| `zscaler-rag/groq-gemma2-9b-it` | gemma2-9b-it | Google Gemma2 |
+| `zih/groq-llama-3-3-70b-versatile` | llama-3.3-70b-versatile | Best quality, default |
+| `zih/groq-llama-3-1-8b-instant` | llama-3.1-8b-instant | Fastest |
+| `zih/groq-mixtral-8x7b-32768` | mixtral-8x7b-32768 | Long context (32k tokens) |
+| `zih/groq-gemma2-9b-it` | gemma2-9b-it | Google Gemma2 |
 
 Get your key at `console.groq.com` — free tier is sufficient for team use.
 
@@ -590,13 +590,13 @@ make ollama-vision       # Optional: pull llava, moondream, qwen2-vl:7b
 
 | OpenWebUI model ID | Model | Type | RAM |
 |--------------------|-------|------|-----|
-| `zscaler-rag/ollama-llama3-2` | llama3.2:3b | Text | 4 GB |
-| `zscaler-rag/ollama-llama3-1` | llama3.1:8b | Text | 6 GB |
-| `zscaler-rag/ollama-mistral` | mistral:7b | Text | 6 GB |
-| `zscaler-rag/ollama-llama3-2-vision` | llama3.2-vision | Vision | 8 GB |
-| `zscaler-rag/ollama-llava` | llava:7b | Vision | 6 GB |
-| `zscaler-rag/ollama-moondream` | moondream:1.8b | Vision | 2 GB |
-| `zscaler-rag/ollama-qwen2-vl:7b` | qwen2-vl:7b | Vision | 8 GB |
+| `zih/ollama-llama3-2` | llama3.2:3b | Text | 4 GB |
+| `zih/ollama-llama3-1` | llama3.1:8b | Text | 6 GB |
+| `zih/ollama-mistral` | mistral:7b | Text | 6 GB |
+| `zih/ollama-llama3-2-vision` | llama3.2-vision | Vision | 8 GB |
+| `zih/ollama-llava` | llava:7b | Vision | 6 GB |
+| `zih/ollama-moondream` | moondream:1.8b | Vision | 2 GB |
+| `zih/ollama-qwen2-vl:7b` | qwen2-vl:7b | Vision | 8 GB |
 
 **GPU acceleration (optional but recommended for vision models):**
 
@@ -617,7 +617,7 @@ To enable NVIDIA GPU:
              capabilities: [gpu]
    ```
 3. Restart Ollama: `docker compose --profile local-llm up -d ollama`
-4. Verify: `docker exec zscaler-ollama nvidia-smi`
+4. Verify: `docker exec zih-ollama nvidia-smi`
 
 ### 6.4 Changing the default provider/model
 
@@ -648,7 +648,7 @@ docker compose restart rag-api   # apply changes
 
 ### 7.1 Service issues
 
-**`make up` fails with "dependency failed to start: container zscaler-qdrant is unhealthy"**
+**`make up` fails with "dependency failed to start: container zih-qdrant is unhealthy"**
 
 This happens after a machine restart or Docker Desktop restart. Qdrant needs 30–60 seconds
 to pass its health check; `make up` starts rag-api too quickly before Qdrant is ready.
@@ -656,7 +656,7 @@ to pass its health check; `make up` starts rag-api too quickly before Qdrant is 
 Fix — start in two steps:
 ```bash
 docker compose up -d qdrant          # start Qdrant first
-docker ps                             # wait until zscaler-qdrant shows (healthy)
+docker ps                             # wait until zih-qdrant shows (healthy)
 docker compose up -d                  # then start everything else
 ```
 
@@ -705,7 +705,7 @@ docker compose restart crawl4ai
 
 ```bash
 make logs   # wait for "Application startup complete."
-docker exec zscaler-openwebui env | grep OPENAI
+docker exec zih-openwebui env | grep OPENAI
 # Expected: OPENAI_API_BASE_URL=http://rag-api:8000/v1
 ```
 
@@ -774,7 +774,7 @@ curl -s http://localhost:6333/collections/zscaler_docs | python -m json.tool
 
 ```bash
 # Correct format
-curl -H "Authorization: Bearer zscaler-rag" http://localhost:8000/v1/models
+curl -H "Authorization: Bearer zih-api" http://localhost:8000/v1/models
 
 # Check your current key
 grep API_KEY .env
@@ -971,7 +971,7 @@ Restart Docker Desktop after changing.
 1. Install NVIDIA Container Toolkit
 2. Uncomment the `deploy` block in `docker-compose.yml` under `ollama`
 3. Restart: `docker compose --profile local-llm up -d ollama`
-4. Verify: `docker exec zscaler-ollama nvidia-smi`
+4. Verify: `docker exec zih-ollama nvidia-smi`
 
 Note: bge-m3 embedding runs on CPU regardless of GPU availability.
 

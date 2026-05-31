@@ -2,7 +2,7 @@
 
 help:
 	@echo ""
-	@echo "  Zscaler RAG Incident Helper"
+	@echo "  Zscaler Incident Helper"
 	@echo "  ─────────────────────────────────────────────────────────────"
 	@echo "  Infrastructure"
 	@echo "  make setup            Install host Python deps + Playwright browser"
@@ -47,7 +47,7 @@ up:
 	@echo "Starting Qdrant first (health check takes 30-60s)..."
 	docker-compose up -d qdrant
 	@echo "Waiting for Qdrant to be healthy..."
-	@until docker inspect zscaler-qdrant --format "{{.State.Health.Status}}" 2>/dev/null | grep -q "healthy"; do sleep 3; done
+	@until docker inspect zih-qdrant --format "{{.State.Health.Status}}" 2>/dev/null | grep -q "healthy"; do sleep 3; done
 	@echo "Qdrant healthy — starting remaining services..."
 	docker-compose up -d
 	@echo ""
@@ -98,18 +98,18 @@ ollama-setup:
 	docker compose --profile local-llm up -d ollama
 	@echo "Waiting 10s for Ollama to start..."
 	@sleep 10
-	docker exec zscaler-ollama ollama pull llama3.2
-	docker exec zscaler-ollama ollama pull llama3.2-vision
+	docker exec zih-ollama ollama pull llama3.2
+	docker exec zih-ollama ollama pull llama3.2-vision
 	@echo ""
 	@echo "Ollama ready with text + vision models."
-	@echo "In OpenWebUI, select: zscaler-rag/ollama-llama3-2-vision"
+	@echo "In OpenWebUI, select: zih/ollama-llama3-2-vision"
 	@echo "Attach a screenshot and ask: What is the error in this log?"
 	@echo ""
 
 ollama-vision:
-	docker exec zscaler-ollama ollama pull llava
-	docker exec zscaler-ollama ollama pull moondream
-	docker exec zscaler-ollama ollama pull qwen2-vl:7b
+	docker exec zih-ollama ollama pull llava
+	docker exec zih-ollama ollama pull moondream
+	docker exec zih-ollama ollama pull qwen2-vl:7b
 	@echo ""
 	@echo "Vision models ready: llava, moondream, qwen2-vl:7b"
 	@echo "qwen2-vl:7b is recommended for reading text in screenshots (DocVQA 93.1)."

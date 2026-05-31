@@ -40,7 +40,7 @@ This tool is designed to process **internal Zscaler incident logs and screenshot
 
 ### API authentication
 - The RAG API uses Bearer token authentication on all `/v1/*` endpoints
-- Change the default `API_KEY=zscaler-rag` before team deployment
+- Change the default `API_KEY=zih-api` before team deployment
 - Set `ALLOWED_ORIGINS` to your specific OpenWebUI hostname — never use `*` in production
 
 ## Scope

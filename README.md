@@ -1,6 +1,6 @@
 # Zscaler RAG Incident Helper
 
-[![CI](https://github.com/manavendrayadav/zscaler-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/manavendrayadav/zscaler-rag/actions/workflows/ci.yml)
+[![CI](https://github.com/manavendrayadav/zscaler-incident-helper/actions/workflows/ci.yml/badge.svg)](https://github.com/manavendrayadav/zscaler-incident-helper/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Docker](https://img.shields.io/badge/docker-compose-2496ED)
@@ -59,8 +59,8 @@ Engineer types incident description
 
 ```bash
 # 1. Clone
-git clone https://github.com/YOUR_USERNAME/zscaler-rag-helper
-cd zscaler-rag-helper
+git clone https://github.com/YOUR_USERNAME/zscaler-incident-helper
+cd zscaler-incident-helper
 
 # 2. Configure — add at minimum GROQ_API_KEY (free at console.groq.com)
 cp .env.example .env
@@ -136,10 +136,10 @@ Base URL: `http://localhost:8000`
 **Example query:**
 ```bash
 curl -s -X POST http://localhost:8000/v1/chat/completions \
-  -H "Authorization: Bearer zscaler-rag" \
+  -H "Authorization: Bearer zih-api" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "zscaler-rag/groq-llama-3-3-70b-versatile",
+    "model": "zih/groq-llama-3-3-70b-versatile",
     "messages": [{"role": "user", "content": "ZPA App Connector is not connecting"}]
   }'
 ```
@@ -162,9 +162,9 @@ Run `make doctor` (or `python scripts/doctor.py`) to get a full system health re
 
 Services
  Service      Container         HTTP                    Status
- qdrant       zscaler-qdrant    http://localhost:6333   OK
- crawl4ai     zscaler-crawl4ai  http://localhost:11235  OK
- rag-api      zscaler-rag-api   http://localhost:8000   OK
+ qdrant       zih-qdrant    http://localhost:6333   OK
+ crawl4ai     zih-crawl4ai  http://localhost:11235  OK
+ rag-api      zih-api   http://localhost:8000   OK
  open-webui   open-webui        http://localhost:3000   OK
 
 API Keys
@@ -246,7 +246,7 @@ Each team member needs:
 
 ```bash
 git clone <repo>
-cd zscaler-rag-helper
+cd zscaler-incident-helper
 cp .env.example .env        # add GROQ_API_KEY
 make up
 make crawl && make ingest
@@ -305,7 +305,7 @@ CONNECTOR_DOWN → CONNECTOR_UP
 | Qdrant shows [404] in doctor | Normal — Qdrant uses gRPC health | Ignore; check container status column |
 | OpenWebUI "connection refused" | rag-api not healthy yet | Wait and retry; check `make logs` |
 | Responses are generic | 0 chunks in Qdrant | `make ingest` (crawl first if needed) |
-| 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zscaler-rag` |
+| 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zih-api` |
 | Groq call shows Zscaler block page | ZCC SSL inspection intercept | Use Ollama or add bypass in ZIA |
 
 See [docs/OPERATIONS.md §7](docs/OPERATIONS.md#7-troubleshooting) for all error patterns.
@@ -344,7 +344,7 @@ For vulnerability reports and data privacy guidance, see [SECURITY.md](SECURITY.
 
 ## Support
 
-Run `make doctor` first — it resolves 80% of issues. Then check [docs/OPERATIONS.md §7 Troubleshooting](docs/OPERATIONS.md). For bugs, open a [GitHub Issue](https://github.com/manavendrayadav/zscaler-rag/issues) with the output of `make doctor`.
+Run `make doctor` first — it resolves 80% of issues. Then check [docs/OPERATIONS.md §7 Troubleshooting](docs/OPERATIONS.md). For bugs, open a [GitHub Issue](https://github.com/manavendrayadav/zscaler-incident-helper/issues) with the output of `make doctor`.
 
 ---
 
