@@ -17,7 +17,7 @@ services:
       retries: 5
 
   crawl4ai:
-    image: unclecode/crawl4ai:0.6.3
+    image: unclecode/crawl4ai:0.8.6
     container_name: zih-crawl4ai
     ports:
       - "11235:11235"
@@ -59,7 +59,7 @@ services:
       start_period: 600s   # bge-m3 download can take 5-10 min on cold start
 
   openwebui:
-    image: ghcr.io/open-webui/open-webui:v0.6.15
+    image: ghcr.io/open-webui/open-webui:v0.9.5
     container_name: zih-openwebui
     ports:
       - "3000:8080"
