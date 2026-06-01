@@ -18,14 +18,21 @@ def client():
     QdrantClient is imported lazily inside functions in retriever.py and indexer.py,
     so we patch at the qdrant_client module level.
     """
+    import numpy as np
+
     mock_model = MagicMock()
     mock_qdrant = MagicMock()
     mock_qdrant.return_value.get_collections.return_value.collections = []
     mock_qdrant.return_value.get_collection.return_value.points_count = 0
     mock_qdrant.return_value.get_collection.return_value.status = "green"
 
+    # Startup now calls embed_query() to validate embedding dimension.
+    # Return a dummy 1024-dim dense vector so the dim-check passes in tests.
+    _dummy_vec = {"dense": np.zeros(1024, dtype="float32").tolist(), "sparse": {}}
+
     with (
         patch("pipeline.embedder.get_model", return_value=mock_model),
+        patch("pipeline.embedder.embed_query", return_value=_dummy_vec),  # lifespan dim-check
         patch("qdrant_client.QdrantClient", mock_qdrant),
     ):
         from fastapi.testclient import TestClient

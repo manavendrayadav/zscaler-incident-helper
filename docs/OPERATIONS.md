@@ -109,6 +109,11 @@ All project commands use `make` (e.g. `make up`, `make doctor`). It works out of
 
 ### 2.1 Clone and configure
 
+> **Legal notice:** This tool crawls publicly available Zscaler documentation (`help.zscaler.com`) for
+> local indexing. Crawled content is stored locally on your machine and is **not redistributed**.
+> Users are responsible for compliance with Zscaler's terms of service. The knowledge base is
+> user-generated from public URLs and is not included in this repository.
+
 ```bash
 git clone <repo-url> Zscalerhelper
 cd zscaler-incident-helper
@@ -915,7 +920,8 @@ Run `make validate-config` after any change.
 
 | Variable | Default | Notes |
 |----------|---------|-------|
-| `API_KEY` | `zscaler-rag` | **Change before team deployment.** Also update `OPENAI_API_KEY` in docker-compose.yml |
+| `API_KEY` | `zih-api` | **Change before team deployment.** The rag-api logs a warning at startup if the default is still set. |
+| `WEBUI_SECRET_KEY` | `change-me-in-production` | JWT signing key for OpenWebUI sessions. **Must be changed for any shared deployment.** Generate: `openssl rand -hex 32` |
 | `ALLOWED_ORIGINS` | `http://localhost:3000` | Never use `*`. Comma-separated list for multiple UIs |
 
 ### Scenario Presets

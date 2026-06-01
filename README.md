@@ -353,6 +353,12 @@ Run `make doctor` first — it resolves 80% of issues. Then check [docs/OPERATIO
 
 ---
 
+## Legal
+
+This tool crawls publicly available Zscaler documentation (`help.zscaler.com`) for local indexing. Crawled content is stored locally and is not redistributed. Users are responsible for compliance with Zscaler's terms of service. The knowledge base is user-generated and is not included in this repository.
+
+---
+
 ## License
 
 MIT © 2026 Manav Yadav — see [LICENSE](LICENSE)

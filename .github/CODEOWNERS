@@ -1,0 +1,14 @@
+# CODEOWNERS — automatic review requests for critical paths.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*  @manavendrayadav
+
+# Security-sensitive paths — require explicit review
+api/main.py          @manavendrayadav
+config.py            @manavendrayadav
+docker-compose.yml   @manavendrayadav
+SECURITY.md          @manavendrayadav
+
+# LLM provider code — changing these affects data privacy
+llm/                 @manavendrayadav

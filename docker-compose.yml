@@ -1,6 +1,8 @@
 services:
   qdrant:
-    image: qdrant/qdrant:latest
+    # Pin to a specific minor version for reproducible deployments.
+    # To upgrade: change the tag, run `docker compose pull qdrant && docker compose up -d qdrant`.
+    image: qdrant/qdrant:v1.14.1
     container_name: zih-qdrant
     ports:
       - "6333:6333"
@@ -15,7 +17,7 @@ services:
       retries: 5
 
   crawl4ai:
-    image: unclecode/crawl4ai:latest
+    image: unclecode/crawl4ai:0.6.3
     container_name: zih-crawl4ai
     ports:
       - "11235:11235"
@@ -57,7 +59,7 @@ services:
       start_period: 600s   # bge-m3 download can take 5-10 min on cold start
 
   openwebui:
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:v0.6.15
     container_name: zih-openwebui
     ports:
       - "3000:8080"
@@ -67,7 +69,8 @@ services:
       - OPENAI_API_BASE_URLS=http://rag-api:8000/v1
       - OPENAI_API_KEY=${API_KEY:-zih-api}
       - OPENAI_API_KEYS=${API_KEY:-zih-api}
-      - WEBUI_SECRET_KEY=change-me-in-production
+      # Generate with: openssl rand -hex 32
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-change-me-in-production}
     depends_on:
       rag-api:
         condition: service_healthy
@@ -79,7 +82,7 @@ services:
   # For vision/screenshot analysis with full privacy (no data leaves your machine),
   # use ollama with a vision-capable model (llama3.2-vision, llava, moondream).
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:0.9.3
     container_name: zih-ollama
     ports:
       - "11434:11434"

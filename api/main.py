@@ -9,6 +9,7 @@ Model naming convention:  zih/{provider}-{model-slug}
 """
 
 import json
+import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -16,6 +17,8 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+logger = logging.getLogger("zih.api")
 
 from api.models import (
     ChatCompletionChoice,
@@ -42,9 +45,28 @@ from rag.retriever import retrieve
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Pre-warm the embedding model so first request isn't slow
-    from pipeline.embedder import get_model
-    get_model()
+    # ── Security warnings ─────────────────────────────────────────────────────
+    if cfg.API_KEY == "zih-api":
+        logger.warning(
+            "⚠️  API_KEY is set to the default 'zih-api'. "
+            "Change it in .env before sharing access with a team. "
+            "See docs/OPERATIONS.md §8 Configuration Reference."
+        )
+
+    # ── Pre-warm embedding model & validate dimension ─────────────────────────
+    import pipeline.embedder as _embedder
+    _embedder.get_model()
+    # Validate that the loaded model's output dimension matches EMBEDDING_DIM.
+    # A mismatch would cause silent wrong retrieval; catch it at startup instead.
+    test_vec = _embedder.embed_query("startup-dimension-check")
+    actual_dim = len(test_vec["dense"] if isinstance(test_vec, dict) else test_vec)
+    if actual_dim != cfg.EMBEDDING_DIM:
+        raise RuntimeError(
+            f"Embedding dimension mismatch: model outputs {actual_dim}d "
+            f"but EMBEDDING_DIM={cfg.EMBEDDING_DIM}. "
+            f"Update EMBEDDING_DIM in .env and run make reset-db && make ingest."
+        )
+
     yield
 
 
@@ -240,6 +262,13 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
     4. Return an OpenAI-format response with sources appended.
     """
     from rag.log_parser import detect_product_from_logs, extract_log_signals, is_log_content
+
+    # Streaming is not yet implemented — reject early rather than silently ignoring
+    if req.stream:
+        raise HTTPException(
+            status_code=501,
+            detail="Streaming responses (stream=true) are not yet supported. Set stream=false.",
+        )
 
     query, images = _extract_last_user_message(req.messages)
     if not query and not images:

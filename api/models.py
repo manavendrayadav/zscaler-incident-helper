@@ -5,7 +5,7 @@ OpenWebUI (and any OpenAI SDK client) connects to these endpoints without modifi
 
 from typing import Literal, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # ── OpenAI-compatible request/response ──────────────────────────────────────
 
@@ -17,11 +17,11 @@ class ChatMessageRequest(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str = "zih/groq-llama3-70b"
     messages: list[ChatMessageRequest]
-    temperature: float = 0.3
-    max_tokens: int = 2048
+    temperature: float = Field(default=0.3, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=2048, ge=1, le=32768)
     stream: bool = False
     # Custom RAG parameters — passed as extra fields by advanced users
-    top_k: int = 5
+    top_k: int = Field(default=5, ge=1, le=20, description="Number of doc chunks to retrieve (1–20)")
     product_filter: str | None = None  # "zia" | "zpa" | "zdx" | None
 
 
