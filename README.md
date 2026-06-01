@@ -361,4 +361,4 @@ This tool crawls publicly available Zscaler documentation (`help.zscaler.com`) f
 
 ## License
 
-MIT © 2026 Manav Yadav — see [LICENSE](LICENSE)
+MIT © 2026 Manavendra Yadav — see [LICENSE](LICENSE)

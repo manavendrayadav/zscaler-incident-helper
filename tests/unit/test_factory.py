@@ -37,8 +37,8 @@ class TestGetProvider:
             assert isinstance(provider, OpenAIProvider)
 
     def test_anthropic_provider_returned(self):
-        from llm.factory import get_provider
         from llm.anthropic_provider import AnthropicProvider
+        from llm.factory import get_provider
 
         with patch("llm.anthropic_provider.AnthropicProvider.__init__", return_value=None):
             provider = get_provider("anthropic")

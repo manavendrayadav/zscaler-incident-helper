@@ -18,8 +18,6 @@ import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-logger = logging.getLogger("zih.api")
-
 from api.models import (
     ChatCompletionChoice,
     ChatCompletionRequest,
@@ -40,6 +38,8 @@ from llm.factory import all_models, list_providers
 from pipeline.indexer import get_collection_stats
 from rag.generator import format_sources_footer, generate
 from rag.retriever import retrieve
+
+logger = logging.getLogger("zih.api")
 
 # ── startup ──────────────────────────────────────────────────────────────────
 
