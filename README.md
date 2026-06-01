@@ -1,6 +1,5 @@
 # Zscaler RAG Incident Helper
 
-[![CI](https://github.com/manavendrayadav/zscaler-incident-helper/actions/workflows/ci.yml/badge.svg)](https://github.com/manavendrayadav/zscaler-incident-helper/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Docker](https://img.shields.io/badge/docker-compose-2496ED)
