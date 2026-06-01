@@ -59,7 +59,7 @@ Engineer types incident description
 
 ```bash
 # 1. Clone
-git clone https://github.com/YOUR_USERNAME/zscaler-incident-helper
+git clone https://github.com/manavendrayadav/zscaler-incident-helper
 cd zscaler-incident-helper
 
 # 2. Configure — add at minimum GROQ_API_KEY (free at console.groq.com)
