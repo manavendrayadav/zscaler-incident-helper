@@ -1,4 +1,4 @@
-.PHONY: setup crawl crawl-all update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit help
+.PHONY: setup crawl crawl-all update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit preflight help
 
 help:
 	@echo ""
@@ -15,9 +15,9 @@ help:
 	@echo "  make reset-db         Wipe Qdrant volume and restart (fresh index)"
 	@echo ""
 	@echo "  Knowledge base"
-	@echo "  make crawl            Phase 1: crawl 5-10 Zscaler pages (initial)"
-	@echo "  make crawl-all        Crawl ALL 1800+ Zscaler pages + auto-ingest"
-	@echo "  make update           Incremental: crawl only new/changed pages"
+	@echo "  make crawl            Crawl Zscaler docs (skips unchanged pages — safe to run anytime)"
+	@echo "  make crawl-all        Same as make crawl + auto-ingest after crawl"
+	@echo "  make update           Same as make crawl (crawl_all.py is always incremental)"
 	@echo "  make ingest           Chunk + embed + index crawled pages into Qdrant"
 	@echo ""
 	@echo "  Ollama (local/private LLM)"
@@ -37,6 +37,9 @@ help:
 	@echo "  make test-integration Run integration tests (requires running stack)"
 	@echo "  make ci               Run lint + typecheck + tests (full local CI)"
 	@echo "  make pre-commit       Run all pre-commit hooks on all files"
+	@echo ""
+	@echo "  Release"
+	@echo "  make preflight        Run before every git push: staged-file check + full CI"
 	@echo ""
 
 setup:
@@ -62,14 +65,16 @@ up-infra:
 	docker-compose up -d qdrant crawl4ai
 	@echo "Qdrant + Crawl4AI starting. Wait ~20s then run: make crawl"
 
+# crawl and update both use crawl_all.py — it always skips unchanged pages via the manifest.
+# There is no separate "initial vs incremental" distinction needed.
 crawl:
-	python scripts/test_crawl.py
+	python scripts/crawl_all.py
 
 crawl-all:
 	python scripts/crawl_all.py
 
 update:
-	python scripts/test_crawl.py --update
+	python scripts/crawl_all.py
 
 ingest:
 	python scripts/ingest.py
@@ -142,3 +147,16 @@ ci: lint typecheck test-fast
 
 pre-commit:
 	pre-commit run --all-files
+
+# ── Release ───────────────────────────────────────────────────────────────────
+
+preflight:
+	@echo "=== Staged file safety check ==="
+	@git diff --staged --name-only | grep -iE "\.env$$|\.key$$|secret|^data/" \
+		&& echo "WARNING: Potentially sensitive file staged — review before pushing!" \
+		|| echo "OK — no sensitive files detected."
+	@echo ""
+	@echo "=== CI checks (lint + typecheck + tests) ==="
+	$(MAKE) ci
+	@echo ""
+	@echo "Pre-flight PASSED. Safe to push."

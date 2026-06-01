@@ -17,3 +17,5 @@ repos:
       - id: detect-private-key
       - id: check-added-large-files
         args: [--maxkb=500]
+      - id: no-commit-to-branch
+        args: [--branch, main]   # all changes to main must go through a PR

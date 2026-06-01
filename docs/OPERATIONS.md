@@ -100,7 +100,7 @@ All project commands use `make` (e.g. `make up`, `make doctor`). It works out of
 | `make doctor` | `python scripts/doctor.py` |
 | `make logs` | `docker compose logs -f rag-api` |
 | `make ingest` | `python scripts/ingest.py` |
-| `make update` | `python scripts/test_crawl.py --update` |
+| `make update` | `python scripts/crawl_all.py` |
 | `make validate-config` | `python scripts/validate_config.py` |
 | `make test-fast` | `pytest tests/unit/ -v` |
 | `make lint` | `ruff check .` |
