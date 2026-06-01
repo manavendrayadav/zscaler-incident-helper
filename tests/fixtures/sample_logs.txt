@@ -1,0 +1,4 @@
+2026-05-28T10:00:00Z ERROR connector=prod-dc1 reason=AUTH_FAILED tunnel_id=abc123
+2026-05-28T10:00:01Z WARN  broker=us-west-1 status=UNREACHABLE retries=3
+2026-05-28T10:00:05Z ERROR connector=prod-dc1 reason=CERT_ERROR cert_subject=*.internal.corp
+2026-05-28T10:00:10Z FATAL tunnel=T-4421 state=TUNNEL_DOWN duration=320s

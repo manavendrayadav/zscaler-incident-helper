@@ -1,0 +1,110 @@
+services:
+  qdrant:
+    # Pin to a specific minor version for reproducible deployments.
+    # To upgrade: change the tag, run `docker compose pull qdrant && docker compose up -d qdrant`.
+    image: qdrant/qdrant:v1.14.1
+    container_name: zih-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/6333' 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  crawl4ai:
+    image: unclecode/crawl4ai:0.6.3
+    container_name: zih-crawl4ai
+    ports:
+      - "11235:11235"
+    environment:
+      - MAX_CONCURRENT_TASKS=3
+      - HEADLESS=true
+    shm_size: "2gb"       # Playwright inside Docker needs shared memory
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11235/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  rag-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zih-api
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - CRAWL4AI_BASE_URL=http://crawl4ai:11235
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 600s   # bge-m3 download can take 5-10 min on cold start
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:v0.6.15
+    container_name: zih-openwebui
+    ports:
+      - "3000:8080"
+    environment:
+      # Singular form (legacy compat) + plural form (current OpenWebUI requirement)
+      - OPENAI_API_BASE_URL=http://rag-api:8000/v1
+      - OPENAI_API_BASE_URLS=http://rag-api:8000/v1
+      - OPENAI_API_KEY=${API_KEY:-zih-api}
+      - OPENAI_API_KEYS=${API_KEY:-zih-api}
+      # Generate with: openssl rand -hex 32
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-change-me-in-production}
+    depends_on:
+      rag-api:
+        condition: service_healthy
+    volumes:
+      - openwebui_data:/app/backend/data
+    restart: unless-stopped
+
+  # Optional local LLM — start with: docker-compose --profile local-llm up -d
+  # For vision/screenshot analysis with full privacy (no data leaves your machine),
+  # use ollama with a vision-capable model (llama3.2-vision, llava, moondream).
+  ollama:
+    image: ollama/ollama:0.9.3
+    container_name: zih-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    profiles:
+      - local-llm
+    restart: unless-stopped
+    # ── NVIDIA GPU support (opt-in) ──────────────────────────────────────────
+    # Uncomment the block below to enable GPU acceleration for faster inference.
+    # Requires: NVIDIA driver + nvidia-container-toolkit installed on the host.
+    # Install toolkit: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+    #
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  qdrant_storage:
+  openwebui_data:
+  ollama_data:

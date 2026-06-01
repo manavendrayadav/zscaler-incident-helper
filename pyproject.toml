@@ -1,0 +1,84 @@
+[project]
+name = "zscaler-incident-helper"
+version = "1.0.0"
+description = "AI-powered Zscaler incident resolution tool using RAG over official documentation"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+keywords = ["zscaler", "rag", "llm", "security", "incident-response", "zia", "zpa"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/manavendrayadav/zscaler-incident-helper"
+Issues = "https://github.com/manavendrayadav/zscaler-incident-helper/issues"
+Changelog = "https://github.com/manavendrayadav/zscaler-incident-helper/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+    "httpx>=0.28.0",   # already in requirements.txt; listed here for test client
+]
+
+# ── Ruff (linting + formatting) ─────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "C4",   # flake8-comprehensions
+]
+ignore = [
+    "E501",    # line too long (handled by formatter)
+    "B008",    # function call in default argument (FastAPI Depends() pattern)
+    "UP007",   # Use X | Y for unions (keep Union for clarity in type comments)
+    "B904",    # raise from err in except — deferred; many callsites
+    "B905",    # zip() strict= — deferred; no mismatched-length risk here
+    "SIM102",  # nested if → combined if — readability preference
+    "SIM105",  # contextlib.suppress — readability preference
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["api", "config", "crawler", "llm", "pipeline", "rag", "scripts"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ── mypy ────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = false        # too noisy with dynamic ML deps
+warn_unused_configs = true
+ignore_missing_imports = true  # many deps have no stubs
+check_untyped_defs = true
+exclude = ["tests/", "scripts/"]
+
+# ── pytest ───────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+markers = [
+    "unit: pure unit tests, no external services required",
+    "integration: requires a running Docker stack (qdrant, rag-api)",
+]

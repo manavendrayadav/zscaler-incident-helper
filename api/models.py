@@ -1,0 +1,108 @@
+"""
+Pydantic models for the OpenAI-compatible FastAPI endpoints.
+OpenWebUI (and any OpenAI SDK client) connects to these endpoints without modification.
+"""
+
+from typing import Literal, Union
+
+from pydantic import BaseModel, Field
+
+# ── OpenAI-compatible request/response ──────────────────────────────────────
+
+class ChatMessageRequest(BaseModel):
+    role: Literal["system", "user", "assistant"]
+    content: Union[str, list]   # list = OpenAI vision format [{type, text/image_url}]
+
+
+class ChatCompletionRequest(BaseModel):
+    model: str = "zih/groq-llama3-70b"
+    messages: list[ChatMessageRequest]
+    temperature: float = Field(default=0.3, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=2048, ge=1, le=32768)
+    stream: bool = False
+    # Custom RAG parameters — passed as extra fields by advanced users
+    top_k: int = Field(default=5, ge=1, le=20, description="Number of doc chunks to retrieve (1–20)")
+    product_filter: str | None = None  # "zia" | "zpa" | "zdx" | None
+
+
+class ChatCompletionChoice(BaseModel):
+    index: int = 0
+    message: dict[str, str]
+    finish_reason: str = "stop"
+
+
+class UsageInfo(BaseModel):
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+
+
+class ChatCompletionResponse(BaseModel):
+    id: str
+    object: str = "chat.completion"
+    created: int
+    model: str
+    choices: list[ChatCompletionChoice]
+    usage: UsageInfo
+
+
+# ── /v1/models ───────────────────────────────────────────────────────────────
+
+class ModelCard(BaseModel):
+    id: str
+    object: str = "model"
+    created: int = 0
+    owned_by: str = "zscaler-incident-helper"
+
+
+class ModelListResponse(BaseModel):
+    object: str = "list"
+    data: list[ModelCard]
+
+
+# ── Internal / health ────────────────────────────────────────────────────────
+
+class HealthResponse(BaseModel):
+    status: str
+    qdrant_connected: bool
+    collection: str
+    chunks_indexed: int
+
+
+class StatsResponse(BaseModel):
+    collection: str
+    vectors_count: int
+    points_count: int
+    status: str
+
+
+# ── /v1/status ───────────────────────────────────────────────────────────────
+
+class ServicesStatus(BaseModel):
+    qdrant: bool
+    crawl4ai: bool
+
+
+class KnowledgeBaseStatus(BaseModel):
+    pages_crawled: int
+    pages_indexed: int
+    pages_stale: int
+    by_product: dict[str, int]
+
+
+class QdrantStatus(BaseModel):
+    points: int
+    status: str
+
+
+class ConfigStatus(BaseModel):
+    embedding_model: str
+    chunk_size: int
+    top_k: int
+
+
+class StatusResponse(BaseModel):
+    services: ServicesStatus
+    knowledge_base: KnowledgeBaseStatus
+    qdrant: QdrantStatus
+    config: ConfigStatus
