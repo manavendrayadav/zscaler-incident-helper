@@ -2,9 +2,9 @@
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Docker](https://img.shields.io/badge/docker-compose-2496ED)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)
-![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000)
+![Docker](https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.135%2B-009688?logo=fastapi&logoColor=white)
+![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-D7FF64?logo=ruff&logoColor=black)
 
 A **self-hosted, portable RAG system** for Zscaler incident resolution. Describe an incident in plain English — get back structured Root Cause Analysis, Step-by-Step Resolution, Verification Steps, and source links, all grounded in real Zscaler documentation.
 
