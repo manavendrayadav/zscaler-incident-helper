@@ -28,6 +28,7 @@ console = Console(highlight=False, markup=True, emoji=False)
 
 # ── Manifest helpers ─────────────────────────────────────────────────────────
 
+
 def _load_manifest() -> dict:
     if cfg.MANIFEST_FILE.exists():
         return json.loads(cfg.MANIFEST_FILE.read_text(encoding="utf-8"))
@@ -66,6 +67,7 @@ def _make_frontmatter(url: str, title: str, product: str, crawled_at: str) -> st
 
 
 # ── Crawl4AI REST API client ─────────────────────────────────────────────────
+
 
 def _crawl4ai_available(base_url: str) -> bool:
     """Quick health-check ping against the Crawl4AI Docker service."""
@@ -108,7 +110,9 @@ def _extract_markdown_from_result(result: dict) -> str | None:
     return None
 
 
-def _crawl_via_crawl4ai_api(url: str, base_url: str, poll_interval: float = 2.0, timeout: float = 120.0) -> str | None:
+def _crawl_via_crawl4ai_api(
+    url: str, base_url: str, poll_interval: float = 2.0, timeout: float = 120.0
+) -> str | None:
     """
     Submit a URL to the Crawl4AI Docker REST API and return the markdown content.
 
@@ -163,8 +167,11 @@ def _crawl_via_crawl4ai_api(url: str, base_url: str, poll_interval: float = 2.0,
         html = result.get("html", "")
         if html:
             from bs4 import BeautifulSoup
+
             soup = BeautifulSoup(html, "html.parser")
-            for tag in soup.select("nav, header, footer, .sidebar, .breadcrumb, script, style, noscript"):
+            for tag in soup.select(
+                "nav, header, footer, .sidebar, .breadcrumb, script, style, noscript"
+            ):
                 tag.decompose()
             article = (
                 soup.find("article")
@@ -207,6 +214,7 @@ def _crawl_via_crawl4ai_api(url: str, base_url: str, poll_interval: float = 2.0,
 
 
 # ── Playwright fallback (Python 3.14 compatible, no lxml needed) ─────────────
+
 
 async def _crawl_with_playwright(url: str) -> str | None:
     """Render page with headless Chromium, extract article HTML, convert to Markdown."""
@@ -289,6 +297,7 @@ def _html_to_markdown(element) -> str:
 
 # ── Unified single-URL crawl ─────────────────────────────────────────────────
 
+
 async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: bool) -> dict | None:
     try:
         markdown = None
@@ -301,7 +310,9 @@ async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: b
             # Auto-fallback: if Crawl4AI returned thin content (SPA not rendered),
             # use local Playwright which handles React apps reliably on the host.
             if not markdown or len(markdown) < 300:
-                console.print(f"  [dim]Crawl4AI thin ({len(markdown or '')} chars) -> Playwright fallback[/dim]")
+                console.print(
+                    f"  [dim]Crawl4AI thin ({len(markdown or '')} chars) -> Playwright fallback[/dim]"
+                )
                 markdown = await _crawl_with_playwright(url)
 
         if not markdown:
@@ -334,6 +345,7 @@ async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: b
 
 
 # ── Main entry point ─────────────────────────────────────────────────────────
+
 
 async def crawl_urls(
     entries: list[SitemapEntry],

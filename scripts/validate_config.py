@@ -85,17 +85,27 @@ def main() -> int:
         models = [m["name"] for m in r.json().get("models", [])]
         _check("OLLAMA_BASE_URL", "PASS", f"reachable — {len(models)} model(s) available")
     except Exception:
-        _check("OLLAMA_BASE_URL", "WARN", f"{cfg.OLLAMA_BASE_URL} not reachable — Ollama provider will not work")
+        _check(
+            "OLLAMA_BASE_URL",
+            "WARN",
+            f"{cfg.OLLAMA_BASE_URL} not reachable — Ollama provider will not work",
+        )
         warnings += 1
 
-    at_least_one = cfg.GROQ_API_KEY or cfg.OPENROUTER_API_KEY or cfg.OPENAI_API_KEY or cfg.ANTHROPIC_API_KEY
+    at_least_one = (
+        cfg.GROQ_API_KEY or cfg.OPENROUTER_API_KEY or cfg.OPENAI_API_KEY or cfg.ANTHROPIC_API_KEY
+    )
     try:
         httpx.get(f"{cfg.OLLAMA_BASE_URL}/api/tags", timeout=3)
         at_least_one = True
     except Exception:
         pass
     if not at_least_one:
-        _check("LLM provider", "FAIL", "no provider configured — set GROQ_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_BASE_URL")
+        _check(
+            "LLM provider",
+            "FAIL",
+            "no provider configured — set GROQ_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or OLLAMA_BASE_URL",
+        )
         failures += 1
 
     # ── Qdrant ────────────────────────────────────────────────────────────────
@@ -115,13 +125,15 @@ def main() -> int:
     console.print("\n[bold]Embedding model[/]")
     try:
         from pipeline.embedder import embed_query
+
         vec = embed_query("test")
         actual_dim = len(vec)
         if actual_dim == cfg.EMBEDDING_DIM:
             _check(f"{cfg.EMBEDDING_MODEL}", "PASS", f"dim={actual_dim}")
         else:
             _check(
-                f"{cfg.EMBEDDING_MODEL}", "FAIL",
+                f"{cfg.EMBEDDING_MODEL}",
+                "FAIL",
                 f"model outputs dim={actual_dim} but EMBEDDING_DIM={cfg.EMBEDDING_DIM} — update config",
             )
             failures += 1
@@ -139,7 +151,11 @@ def main() -> int:
         _check("API_KEY", "PASS", "custom key set")
 
     if cfg.ALLOWED_ORIGINS == ["http://localhost:3000"]:
-        _check("ALLOWED_ORIGINS", "WARN", "localhost only — add your team's OpenWebUI URL for deployment")
+        _check(
+            "ALLOWED_ORIGINS",
+            "WARN",
+            "localhost only — add your team's OpenWebUI URL for deployment",
+        )
         warnings += 1
     elif "*" in cfg.ALLOWED_ORIGINS:
         _check("ALLOWED_ORIGINS", "FAIL", "wildcard '*' — restrict to specific origins")
@@ -151,7 +167,9 @@ def main() -> int:
     console.print()
     console.rule()
     if failures:
-        console.print(f"[bold red]{failures} failure(s), {warnings} warning(s) — fix failures before proceeding[/]")
+        console.print(
+            f"[bold red]{failures} failure(s), {warnings} warning(s) — fix failures before proceeding[/]"
+        )
         return 1
     elif warnings:
         console.print(f"[bold yellow]{warnings} warning(s) — review before team deployment[/]")

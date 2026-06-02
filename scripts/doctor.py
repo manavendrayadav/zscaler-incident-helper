@@ -30,37 +30,41 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-RAG_API_URL   = "http://localhost:8000"
-QDRANT_URL    = "http://localhost:6333"
-CRAWL4AI_URL  = "http://localhost:11235"
+RAG_API_URL = "http://localhost:8000"
+QDRANT_URL = "http://localhost:6333"
+CRAWL4AI_URL = "http://localhost:11235"
 OPENWEBUI_URL = "http://localhost:3000"
 MANIFEST_FILE = Path(__file__).parent.parent / "data" / "crawl_manifest.json"
-RAW_DIR       = Path(__file__).parent.parent / "data" / "raw"
-COLLECTION    = os.getenv("COLLECTION_NAME", "zscaler_docs")
+RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
+COLLECTION = os.getenv("COLLECTION_NAME", "zscaler_docs")
 
 console = Console(highlight=False, emoji=False, markup=True)
 
-PASS  = "[bold green]OK[/]"
-WARN  = "[bold yellow]WARN[/]"
-FAIL  = "[bold red]FAIL[/]"
-SKIP  = "[dim]--[/]"
+PASS = "[bold green]OK[/]"
+WARN = "[bold yellow]WARN[/]"
+FAIL = "[bold red]FAIL[/]"
+SKIP = "[dim]--[/]"
 
 
 # ── Check functions ──────────────────────────────────────────────────────────
 
+
 def check_docker_containers() -> dict[str, bool]:
     """Return {service_name: is_running} for all known containers."""
     name_map = {
-        "zih-qdrant":    "qdrant",
-        "zih-crawl4ai":  "crawl4ai",
-        "zih-api":       "rag-api",
+        "zih-qdrant": "qdrant",
+        "zih-crawl4ai": "crawl4ai",
+        "zih-api": "rag-api",
         "zih-openwebui": "open-webui",
     }
     result = dict.fromkeys(name_map.values(), False)
     try:
         proc = subprocess.run(
             ["docker", "ps", "--format", "{{.Names}}"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         running = set(proc.stdout.strip().splitlines())
         for container, service in name_map.items():
@@ -89,10 +93,10 @@ def check_http(url: str, timeout: float = 4.0) -> tuple[bool, str]:
 def check_api_keys() -> dict[str, str]:
     """Return {provider: 'SET'|'MISSING'} for each cloud LLM provider."""
     return {
-        "groq":        "SET" if os.getenv("GROQ_API_KEY") else "MISSING",
-        "openrouter":  "SET" if os.getenv("OPENROUTER_API_KEY") else "MISSING",
-        "openai":      "SET" if os.getenv("OPENAI_API_KEY") else "MISSING",
-        "anthropic":   "SET" if os.getenv("ANTHROPIC_API_KEY") else "MISSING",
+        "groq": "SET" if os.getenv("GROQ_API_KEY") else "MISSING",
+        "openrouter": "SET" if os.getenv("OPENROUTER_API_KEY") else "MISSING",
+        "openai": "SET" if os.getenv("OPENAI_API_KEY") else "MISSING",
+        "anthropic": "SET" if os.getenv("ANTHROPIC_API_KEY") else "MISSING",
     }
 
 
@@ -105,7 +109,11 @@ def test_groq_key() -> tuple[bool, str]:
         resp = httpx.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": "llama-3.1-8b-instant", "messages": [{"role": "user", "content": "Hi"}], "max_tokens": 3},
+            json={
+                "model": "llama-3.1-8b-instant",
+                "messages": [{"role": "user", "content": "Hi"}],
+                "max_tokens": 3,
+            },
             timeout=8.0,
         )
         if resp.status_code == 200:
@@ -145,29 +153,29 @@ def analyze_manifest() -> dict:
         return {"missing": True}
 
     manifest = json.loads(MANIFEST_FILE.read_text(encoding="utf-8"))
-    total     = len(manifest)
-    indexed   = sum(1 for v in manifest.values() if v.get("chunk_ids"))
-    stale     = 0
+    total = len(manifest)
+    indexed = sum(1 for v in manifest.values() if v.get("chunk_ids"))
+    stale = 0
     by_product: Counter = Counter()
 
     for entry in manifest.values():
         product = entry.get("product", "unknown")
         by_product[product] += 1
-        lc  = entry.get("last_crawled", "")
-        lm  = entry.get("sitemap_lastmod", "")
+        lc = entry.get("last_crawled", "")
+        lm = entry.get("sitemap_lastmod", "")
         if lm and lc and lm[:10] > lc[:10]:
             stale += 1
 
     raw_files = len(list(RAW_DIR.glob("*.md"))) if RAW_DIR.exists() else 0
 
     return {
-        "missing":       False,
-        "total":         total,
-        "indexed":       indexed,
-        "not_indexed":   total - indexed,
-        "stale":         stale,
-        "by_product":    dict(by_product),
-        "raw_files":     raw_files,
+        "missing": False,
+        "total": total,
+        "indexed": indexed,
+        "not_indexed": total - indexed,
+        "stale": stale,
+        "by_product": dict(by_product),
+        "raw_files": raw_files,
         "file_mismatch": raw_files != total,
     }
 
@@ -176,6 +184,7 @@ def get_qdrant_product_counts() -> dict[str, int]:
     """Scroll Qdrant collection and count chunks by product."""
     try:
         from qdrant_client import QdrantClient
+
         client = QdrantClient(host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")))
         counts: Counter = Counter()
         offset = None
@@ -200,6 +209,7 @@ def get_qdrant_product_counts() -> dict[str, int]:
 
 # ── Rendering helpers ────────────────────────────────────────────────────────
 
+
 def _status_cell(ok: bool, warn: bool = False) -> str:
     if ok:
         return PASS
@@ -208,20 +218,20 @@ def _status_cell(ok: bool, warn: bool = False) -> str:
 
 def render_services(containers: dict[str, bool], http: dict[str, tuple[bool, str]]) -> Panel:
     t = Table(box=None, padding=(0, 1), show_header=True, header_style="bold")
-    t.add_column("Service",   style="cyan", min_width=12)
+    t.add_column("Service", style="cyan", min_width=12)
     t.add_column("Container", min_width=10)
-    t.add_column("HTTP",      min_width=24)
-    t.add_column("Status",    min_width=8)
+    t.add_column("HTTP", min_width=24)
+    t.add_column("Status", min_width=8)
 
     rows = [
-        ("qdrant",     "zih-qdrant",    f"{QDRANT_URL}/health",   False),
-        ("crawl4ai",   "zih-crawl4ai",  f"{CRAWL4AI_URL}/health", True),   # optional
-        ("rag-api",    "zih-api",       f"{RAG_API_URL}/health",  False),
-        ("open-webui", "zih-openwebui", OPENWEBUI_URL,            True),   # optional
+        ("qdrant", "zih-qdrant", f"{QDRANT_URL}/health", False),
+        ("crawl4ai", "zih-crawl4ai", f"{CRAWL4AI_URL}/health", True),  # optional
+        ("rag-api", "zih-api", f"{RAG_API_URL}/health", False),
+        ("open-webui", "zih-openwebui", OPENWEBUI_URL, True),  # optional
     ]
 
     for service, container, url, optional in rows:
-        c_ok  = containers.get(service, False)
+        c_ok = containers.get(service, False)
         h_ok, h_msg = http.get(service, (False, "?"))
         overall_ok = c_ok and h_ok
         cell = _status_cell(overall_ok, warn=optional)
@@ -239,13 +249,13 @@ def render_keys(
     ollama_msg: str,
 ) -> Panel:
     t = Table(box=None, padding=(0, 1), show_header=True, header_style="bold")
-    t.add_column("Provider",  style="cyan", min_width=12)
+    t.add_column("Provider", style="cyan", min_width=12)
     t.add_column("Key / URL", min_width=28)
-    t.add_column("Tested",    min_width=28)
+    t.add_column("Tested", min_width=28)
 
     for provider, key_status in keys.items():
         if key_status == "MISSING":
-            key_cell    = f"[yellow]{key_status}[/]"
+            key_cell = f"[yellow]{key_status}[/]"
             tested_cell = SKIP
         else:
             key_cell = f"[green]{key_status}[/]"
@@ -256,10 +266,8 @@ def render_keys(
         t.add_row(provider, key_cell, tested_cell)
 
     # Ollama — URL-based, no API key
-    url_cell    = f"[dim]{ollama_url}[/]"
-    tested_cell = (
-        f"[green]{ollama_msg}[/]" if ollama_ok else f"[yellow]{ollama_msg}[/]"
-    )
+    url_cell = f"[dim]{ollama_url}[/]"
+    tested_cell = f"[green]{ollama_msg}[/]" if ollama_ok else f"[yellow]{ollama_msg}[/]"
     t.add_row("ollama", url_cell, tested_cell)
 
     return Panel(t, title="[bold]API Keys[/]", border_style="blue")
@@ -270,26 +278,24 @@ def render_knowledge_base(stats: dict) -> Panel:
         return Panel(
             "[red]data/crawl_manifest.json not found.[/]\n"
             "Run [bold cyan]make crawl[/] to start crawling.",
-            title="[bold]Knowledge Base[/]", border_style="red",
+            title="[bold]Knowledge Base[/]",
+            border_style="red",
         )
 
-    total      = stats["total"]
-    indexed    = stats["indexed"]
-    stale      = stats["stale"]
-    raw_files  = stats["raw_files"]
+    total = stats["total"]
+    indexed = stats["indexed"]
+    stale = stats["stale"]
+    raw_files = stats["raw_files"]
     by_product = stats["by_product"]
-    mismatch   = stats["file_mismatch"]
+    mismatch = stats["file_mismatch"]
 
-    product_str = "  ".join(
-        f"[cyan]{p.upper()}[/]: {c}" for p, c in sorted(by_product.items())
-    )
+    product_str = "  ".join(f"[cyan]{p.upper()}[/]: {c}" for p, c in sorted(by_product.items()))
 
     lines = [
         f"Pages crawled : [bold]{total}[/]     {product_str}",
         f"Pages indexed : [bold]{indexed}[/]"
         + ("" if indexed == total else f"  [yellow]({total - indexed} not yet ingested)[/]"),
-        f"Pages stale   : [bold]{stale}[/]"
-        + ("  [yellow](run make update)[/]" if stale else ""),
+        f"Pages stale   : [bold]{stale}[/]" + ("  [yellow](run make update)[/]" if stale else ""),
         f"Raw .md files : [bold]{raw_files}[/]"
         + ("  [yellow](mismatch with manifest)[/]" if mismatch else ""),
     ]
@@ -304,16 +310,21 @@ def render_qdrant(http_ok: bool, product_counts: dict) -> Panel:
 
     try:
         from qdrant_client import QdrantClient
-        client   = QdrantClient(host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")))
-        info     = client.get_collection(COLLECTION)
-        points   = info.points_count or 0
-        status   = str(info.status)
-    except Exception as e:
-        return Panel(f"[red]Error reading collection: {e}[/]", title="[bold]Qdrant[/]", border_style="red")
 
-    product_str = "  ".join(
-        f"[cyan]{p.upper()}[/]: {c}" for p, c in sorted(product_counts.items())
-    ) if product_counts else "[dim]run doctor again after ingest[/]"
+        client = QdrantClient(host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")))
+        info = client.get_collection(COLLECTION)
+        points = info.points_count or 0
+        status = str(info.status)
+    except Exception as e:
+        return Panel(
+            f"[red]Error reading collection: {e}[/]", title="[bold]Qdrant[/]", border_style="red"
+        )
+
+    product_str = (
+        "  ".join(f"[cyan]{p.upper()}[/]: {c}" for p, c in sorted(product_counts.items()))
+        if product_counts
+        else "[dim]run doctor again after ingest[/]"
+    )
 
     color = "green" if status == "CollectionStatus.Green" or "green" in status.lower() else "yellow"
     lines = [
@@ -325,13 +336,16 @@ def render_qdrant(http_ok: bool, product_counts: dict) -> Panel:
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main() -> int:
     now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     console.print()
-    console.print(Panel(
-        f"[bold white]Zscaler RAG  —  System Doctor[/]\n[dim]{now}[/]",
-        border_style="bold blue",
-    ))
+    console.print(
+        Panel(
+            f"[bold white]Zscaler RAG  —  System Doctor[/]\n[dim]{now}[/]",
+            border_style="bold blue",
+        )
+    )
     console.print()
 
     # ── Gather all data ──────────────────────────────────────────────────────
@@ -340,9 +354,9 @@ def main() -> int:
 
     http_results: dict[str, tuple[bool, str]] = {}
     for service, url in [
-        ("qdrant",     f"{QDRANT_URL}/health"),
-        ("crawl4ai",   f"{CRAWL4AI_URL}/health"),
-        ("rag-api",    f"{RAG_API_URL}/health"),
+        ("qdrant", f"{QDRANT_URL}/health"),
+        ("crawl4ai", f"{CRAWL4AI_URL}/health"),
+        ("rag-api", f"{RAG_API_URL}/health"),
         ("open-webui", OPENWEBUI_URL),
     ]:
         http_results[service] = check_http(url)
@@ -401,7 +415,7 @@ def main() -> int:
         if kb_stats.get("file_mismatch"):
             warnings += 1
 
-    total_checks = 13   # 3 failure paths + 10 warning paths
+    total_checks = 13  # 3 failure paths + 10 warning paths
     passes = total_checks - failures - warnings
 
     if failures:
@@ -418,13 +432,15 @@ def main() -> int:
         exit_code = 0
 
     console.print()
-    console.print(Panel(
-        f"[{result_style}]{result_label}[/]  "
-        f"[green]{passes} passed[/]  "
-        f"[yellow]{warnings} warnings[/]  "
-        f"[red]{failures} failures[/]",
-        border_style=result_style,
-    ))
+    console.print(
+        Panel(
+            f"[{result_style}]{result_label}[/]  "
+            f"[green]{passes} passed[/]  "
+            f"[yellow]{warnings} warnings[/]  "
+            f"[red]{failures} failures[/]",
+            border_style=result_style,
+        )
+    )
     console.print()
 
     return exit_code

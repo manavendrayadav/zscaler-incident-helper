@@ -9,9 +9,10 @@ from pydantic import BaseModel, Field
 
 # ── OpenAI-compatible request/response ──────────────────────────────────────
 
+
 class ChatMessageRequest(BaseModel):
     role: Literal["system", "user", "assistant"]
-    content: Union[str, list]   # list = OpenAI vision format [{type, text/image_url}]
+    content: Union[str, list]  # list = OpenAI vision format [{type, text/image_url}]
 
 
 class ChatCompletionRequest(BaseModel):
@@ -21,7 +22,9 @@ class ChatCompletionRequest(BaseModel):
     max_tokens: int = Field(default=2048, ge=1, le=32768)
     stream: bool = False
     # Custom RAG parameters — passed as extra fields by advanced users
-    top_k: int = Field(default=5, ge=1, le=20, description="Number of doc chunks to retrieve (1–20)")
+    top_k: int = Field(
+        default=5, ge=1, le=20, description="Number of doc chunks to retrieve (1–20)"
+    )
     product_filter: str | None = None  # "zia" | "zpa" | "zdx" | None
 
 
@@ -67,6 +70,7 @@ class ChatCompletionChunk(BaseModel):
 
 # ── /v1/models ───────────────────────────────────────────────────────────────
 
+
 class ModelCard(BaseModel):
     id: str
     object: str = "model"
@@ -80,6 +84,7 @@ class ModelListResponse(BaseModel):
 
 
 # ── Internal / health ────────────────────────────────────────────────────────
+
 
 class HealthResponse(BaseModel):
     status: str
@@ -96,6 +101,7 @@ class StatsResponse(BaseModel):
 
 
 # ── /v1/status ───────────────────────────────────────────────────────────────
+
 
 class ServicesStatus(BaseModel):
     qdrant: bool

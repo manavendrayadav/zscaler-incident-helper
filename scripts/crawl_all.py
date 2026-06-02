@@ -51,14 +51,13 @@ from crawler.sitemap_parser import SitemapEntry, fetch_sitemap
 
 console = Console(highlight=False, markup=True, emoji=False)
 
-INGEST_EVERY = 100   # ingest into Qdrant every N successfully crawled pages
+INGEST_EVERY = 100  # ingest into Qdrant every N successfully crawled pages
 
 
 # ── Single-page crawl with fresh browser ─────────────────────────────────────
 
-async def _crawl_one(
-    url: str, product: str, lastmod: str, pw, browser
-) -> dict | None:
+
+async def _crawl_one(url: str, product: str, lastmod: str, pw, browser) -> dict | None:
     """
     Crawl one page using a shared Playwright browser.
     Creates a fresh context+page, then closes them after use.
@@ -71,8 +70,7 @@ async def _crawl_one(
         context = await browser.new_context()
         page = await context.new_page()
         await page.route(
-            "**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2,ttf,eot,ico}",
-            lambda r: r.abort()
+            "**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2,ttf,eot,ico}", lambda r: r.abort()
         )
         await page.goto(url, wait_until="networkidle", timeout=30_000)
         await page.wait_for_timeout(2_500)
@@ -109,9 +107,9 @@ async def _crawl_one(
     if not markdown or len(markdown) < 100:
         return None
 
-    title      = _extract_title(markdown, url)
-    slug       = _url_to_slug(url)
-    file_path  = cfg.RAW_DIR / f"{slug}.md"
+    title = _extract_title(markdown, url)
+    slug = _url_to_slug(url)
+    file_path = cfg.RAW_DIR / f"{slug}.md"
     crawled_at = datetime.now(UTC).isoformat()
 
     cfg.RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -121,13 +119,13 @@ async def _crawl_one(
     )
 
     return {
-        "last_crawled":    crawled_at,
+        "last_crawled": crawled_at,
         "sitemap_lastmod": lastmod,
-        "file":            f"data/raw/{file_path.name}",
-        "title":           title,
-        "product":         product,
-        "content_hash":    hashlib.sha256(markdown.encode()).hexdigest()[:16],
-        "chunk_ids":       [],
+        "file": f"data/raw/{file_path.name}",
+        "title": title,
+        "product": product,
+        "content_hash": hashlib.sha256(markdown.encode()).hexdigest()[:16],
+        "chunk_ids": [],
     }
 
 
@@ -148,11 +146,11 @@ async def _run_crawl_async(
 
     crawled_this_run: list[str] = []
     total_chunks = 0
-    ok_count     = 0
-    skip_count   = 0
-    page_num     = 0
+    ok_count = 0
+    skip_count = 0
+    page_num = 0
 
-    pw      = await async_playwright().start()
+    pw = await async_playwright().start()
     browser = await pw.chromium.launch(
         headless=True,
         args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
@@ -204,9 +202,7 @@ async def _run_crawl_async(
             progress.advance(task)
 
             # Ingest every INGEST_EVERY successfully crawled pages
-            if (not no_ingest
-                    and len(crawled_this_run) % INGEST_EVERY == 0
-                    and crawled_this_run):
+            if not no_ingest and len(crawled_this_run) % INGEST_EVERY == 0 and crawled_this_run:
                 batch = crawled_this_run[-INGEST_EVERY:]
                 progress.stop()
                 console.print(
@@ -238,6 +234,7 @@ async def _run_crawl_async(
 
 # ── Ingest a batch of pages into Qdrant ──────────────────────────────────────
 
+
 def _ingest_batch(urls: list[str], manifest: dict) -> int:
     from pipeline.chunker import chunk_files
     from pipeline.embedder import embed_chunks
@@ -257,9 +254,9 @@ def _ingest_batch(urls: list[str], manifest: dict) -> int:
     if not files:
         return 0
 
-    chunks     = chunk_files(files)
+    chunks = chunk_files(files)
     embeddings = embed_chunks(chunks)
-    point_ids  = upsert_chunks(chunks, embeddings)
+    point_ids = upsert_chunks(chunks, embeddings)
 
     url_chunk_map: dict[str, list[str]] = defaultdict(list)
     for chunk, pid in zip(chunks, point_ids):
@@ -270,10 +267,11 @@ def _ingest_batch(urls: list[str], manifest: dict) -> int:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Zscaler full-site crawler (sequential)")
     parser.add_argument("--product", choices=["zia", "zpa", "zdx", "zcc", "deception"])
-    parser.add_argument("--force",     action="store_true")
+    parser.add_argument("--force", action="store_true")
     parser.add_argument("--no-ingest", action="store_true")
     args = parser.parse_args()
 
@@ -284,9 +282,9 @@ def main():
     if args.product:
         all_entries = [e for e in all_entries if e.product == args.product]
 
-    manifest  = _load_manifest()
-    to_crawl  = [e for e in all_entries if args.force or _needs_crawl(e.url, e.lastmod, manifest)]
-    skipped   = len(all_entries) - len(to_crawl)
+    manifest = _load_manifest()
+    to_crawl = [e for e in all_entries if args.force or _needs_crawl(e.url, e.lastmod, manifest)]
+    skipped = len(all_entries) - len(to_crawl)
 
     by_product = Counter(e.product for e in all_entries)
     console.print(
@@ -300,7 +298,9 @@ def main():
         console.print("\n[bold green]All pages already scraped![/]")
         return
 
-    console.print(f"  Mode: single event loop, browser restart every {BROWSER_RESTART_EVERY} pages\n")
+    console.print(
+        f"  Mode: single event loop, browser restart every {BROWSER_RESTART_EVERY} pages\n"
+    )
 
     start_time = time.time()
     ok_count, skip_count, total_chunks = asyncio.run(
@@ -312,9 +312,11 @@ def main():
     elapsed = round(time.time() - start_time)
     console.rule("[bold green]Done[/]")
     console.print(f"  Crawled  : [green]{ok_count}[/]  skipped: {skip_count}")
-    console.print(f"  Manifest : {len([v for v in manifest.values() if v.get('file')])} / {len(all_entries)}")
+    console.print(
+        f"  Manifest : {len([v for v in manifest.values() if v.get('file')])} / {len(all_entries)}"
+    )
     console.print(f"  Chunks   : +{total_chunks} this run")
-    console.print(f"  Time     : {elapsed//60}m {elapsed%60}s")
+    console.print(f"  Time     : {elapsed // 60}m {elapsed % 60}s")
 
     remaining = len({e.url for e in fetch_sitemap(filter_relevant=False)} - set(manifest.keys()))
     if remaining == 0:

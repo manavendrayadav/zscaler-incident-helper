@@ -15,6 +15,7 @@ class TestConfigDefaults:
     def _fresh_config(self, env_overrides: dict | None = None):
         """Import a fresh Config instance with optional env overrides."""
         import importlib
+
         env = {
             "GROQ_API_KEY": "",
             "OPENROUTER_API_KEY": "",
@@ -23,6 +24,7 @@ class TestConfigDefaults:
             env.update(env_overrides)
         with patch.dict(os.environ, env, clear=False):
             import config as config_module
+
             importlib.reload(config_module)
             return config_module.Config()
 
@@ -81,8 +83,10 @@ class TestConfigEnvOverrides:
 
     def _cfg_with(self, **kwargs):
         import importlib
+
         with patch.dict(os.environ, {k: str(v) for k, v in kwargs.items()}, clear=False):
             import config as config_module
+
             importlib.reload(config_module)
             return config_module.Config()
 

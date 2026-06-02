@@ -17,11 +17,11 @@ def _register():
     from llm.openrouter_provider import OpenRouterProvider
 
     _PROVIDERS = {
-        "groq":       GroqProvider,
+        "groq": GroqProvider,
         "openrouter": OpenRouterProvider,
-        "openai":     OpenAIProvider,
-        "anthropic":  AnthropicProvider,
-        "ollama":     OllamaProvider,
+        "openai": OpenAIProvider,
+        "anthropic": AnthropicProvider,
+        "ollama": OllamaProvider,
     }
 
 

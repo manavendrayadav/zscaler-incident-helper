@@ -5,7 +5,6 @@ Tests is_log_content(), extract_log_signals(), and detect_product_from_logs()
 using only stdlib — no ML models or external services required.
 """
 
-
 from rag.log_parser import detect_product_from_logs, extract_log_signals, is_log_content
 
 # ── is_log_content ────────────────────────────────────────────────────────────
@@ -94,12 +93,14 @@ class TestExtractLogSignals:
         # extract_log_signals caps at 15 unique signal phrases before joining.
         # The final joined string may have more space-separated tokens because
         # multi-word phrases (e.g. "auth failed") count as one signal but two words.
-        text = "\n".join([
-            "2026-01-01T00:00:00Z ERROR connector TUNNEL_DOWN AUTH_FAILED zscaler",
-            "2026-01-01T00:00:01Z WARN  broker TIMEOUT SSL_ERROR TLS_ERROR",
-            "2026-01-01T00:00:02Z FATAL CERT_ERROR UNREACHABLE zpa zia",
-            "2026-01-01T00:00:03Z ERROR CONNECTOR_DOWN UNAUTHORIZED ACCESS_DENIED",
-        ])
+        text = "\n".join(
+            [
+                "2026-01-01T00:00:00Z ERROR connector TUNNEL_DOWN AUTH_FAILED zscaler",
+                "2026-01-01T00:00:01Z WARN  broker TIMEOUT SSL_ERROR TLS_ERROR",
+                "2026-01-01T00:00:02Z FATAL CERT_ERROR UNREACHABLE zpa zia",
+                "2026-01-01T00:00:03Z ERROR CONNECTOR_DOWN UNAUTHORIZED ACCESS_DENIED",
+            ]
+        )
         result = extract_log_signals(text)
         # Result must be a non-empty string (not empty / fallback)
         assert isinstance(result, str) and len(result) > 0

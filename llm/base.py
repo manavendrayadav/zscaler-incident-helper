@@ -7,8 +7,8 @@ from typing import Union
 
 @dataclass
 class Message:
-    role: str   # "system" | "user" | "assistant"
-    content: Union[str, list]   # str for text; list for vision (OpenAI image_url format)
+    role: str  # "system" | "user" | "assistant"
+    content: Union[str, list]  # str for text; list for vision (OpenAI image_url format)
 
 
 @dataclass

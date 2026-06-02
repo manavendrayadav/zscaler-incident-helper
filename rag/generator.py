@@ -7,7 +7,6 @@ Two modes:
   log_analysis — user pasted logs or attached a screenshot; identify events + correlate with docs
 """
 
-
 from llm.base import LLMResponse, Message
 from llm.factory import get_provider
 from rag.retriever import SourceChunk
@@ -44,6 +43,7 @@ Format your response in clean Markdown."""
 
 
 # ── Prompt builders ───────────────────────────────────────────────────────────
+
 
 def _format_context(chunks: list[SourceChunk]) -> str:
     parts = []
@@ -123,6 +123,7 @@ Documentation sources used (title + URL)."""
 
 # ── Main generate function ────────────────────────────────────────────────────
 
+
 def generate(
     query: str,
     chunks: list[SourceChunk],
@@ -150,8 +151,8 @@ def generate(
     """
     from config import cfg
 
-    provider    = get_provider(provider_name or cfg.DEFAULT_PROVIDER)
-    model       = model or cfg.DEFAULT_MODEL
+    provider = get_provider(provider_name or cfg.DEFAULT_PROVIDER)
+    model = model or cfg.DEFAULT_MODEL
     system_prompt = LOG_ANALYSIS_SYSTEM_PROMPT if mode == "log_analysis" else SYSTEM_PROMPT
 
     # Build the RAG-augmented prompt text
@@ -169,7 +170,7 @@ def generate(
 
     messages = [
         Message(role="system", content=system_prompt),
-        Message(role="user",   content=user_content),
+        Message(role="user", content=user_content),
     ]
 
     return provider.complete(messages, model=model, temperature=temperature, max_tokens=max_tokens)

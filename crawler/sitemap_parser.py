@@ -36,8 +36,8 @@ RELEVANT_KEYWORDS = (
 @dataclass
 class SitemapEntry:
     url: str
-    lastmod: str        # ISO date string e.g. "2026-05-27"
-    product: str        # inferred from URL: zia | zpa | zdx | ...
+    lastmod: str  # ISO date string e.g. "2026-05-27"
+    product: str  # inferred from URL: zia | zpa | zdx | ...
 
     def lastmod_date(self) -> datetime:
         try:

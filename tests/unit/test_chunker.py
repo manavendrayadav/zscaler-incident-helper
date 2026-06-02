@@ -107,7 +107,10 @@ class TestChunkMarkdownFile:
     def test_url_propagated_from_frontmatter(self, sample_md_file):
         chunks = chunk_markdown_file(sample_md_file)
         for chunk in chunks:
-            assert chunk["metadata"]["url"] == "https://help.zscaler.com/zpa/troubleshooting-app-connectors"
+            assert (
+                chunk["metadata"]["url"]
+                == "https://help.zscaler.com/zpa/troubleshooting-app-connectors"
+            )
 
     def test_product_propagated_from_frontmatter(self, sample_md_file):
         chunks = chunk_markdown_file(sample_md_file)

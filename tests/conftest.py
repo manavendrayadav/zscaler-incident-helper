@@ -98,6 +98,7 @@ def mock_embed_query_dense():
 
 # ── Mock Qdrant ───────────────────────────────────────────────────────────────
 
+
 def _make_qdrant_point(chunk: dict) -> MagicMock:
     """Build a fake Qdrant ScoredPoint from a chunk dict."""
     point = MagicMock()
@@ -124,11 +125,14 @@ def mock_qdrant_client(sample_chunks):
 
 # ── Mock LLM provider ─────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def mock_llm_response():
     """Return a fixed LLMResponse-like object for generator tests."""
     response = MagicMock()
-    response.content = "## Root Cause\nThe connector authentication failed.\n## Resolution\nRenew the certificate."
+    response.content = (
+        "## Root Cause\nThe connector authentication failed.\n## Resolution\nRenew the certificate."
+    )
     response.prompt_tokens = 100
     response.completion_tokens = 50
     return response

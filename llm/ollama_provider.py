@@ -11,10 +11,10 @@ DEFAULT_MODELS = [
     "gemma2",
     "qwen2.5",
     # Vision-capable models — pull with: make ollama-vision
-    "llama3.2-vision",   # reads screenshots + attached images
-    "llava",             # classic vision model (7B / 13B)
-    "moondream",         # lightweight vision (2B, fast on CPU)
-    "qwen2-vl:7b",       # best-in-class vision for reading text in screenshots
+    "llama3.2-vision",  # reads screenshots + attached images
+    "llava",  # classic vision model (7B / 13B)
+    "moondream",  # lightweight vision (2B, fast on CPU)
+    "qwen2-vl:7b",  # best-in-class vision for reading text in screenshots
 ]
 
 

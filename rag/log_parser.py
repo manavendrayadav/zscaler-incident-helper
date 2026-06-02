@@ -13,48 +13,96 @@ import re
 # ── Patterns ──────────────────────────────────────────────────────────────────
 
 _TIMESTAMP_PATTERNS = [
-    re.compile(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}"),          # ISO 8601 / syslog
-    re.compile(r"\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}"),            # MM/DD/YYYY HH:MM
+    re.compile(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}"),  # ISO 8601 / syslog
+    re.compile(r"\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}"),  # MM/DD/YYYY HH:MM
     re.compile(r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+\s+\d{2}:\d{2}", re.I),
-    re.compile(r"\[\d{4}-\d{2}-\d{2}"),                         # [2026-05-28...
+    re.compile(r"\[\d{4}-\d{2}-\d{2}"),  # [2026-05-28...
 ]
 
 _ERROR_KEYWORDS = [
-    "ERROR", "WARN", "WARNING", "CRITICAL", "FATAL",
-    "FAILED", "FAILURE", "TIMEOUT", "TIMED_OUT",
-    "AUTH_FAILED", "AUTHENTICATION_FAILED",
-    "TUNNEL_DOWN", "TUNNEL_FAILED",
-    "SSL_ERROR", "TLS_ERROR", "CERT_ERROR",
-    "CONNECTION_REFUSED", "CONNECTION_RESET", "UNREACHABLE",
-    "ACCESS_DENIED", "UNAUTHORIZED",
-    "CONNECTOR_DOWN", "BROKER_UNREACHABLE",
+    "ERROR",
+    "WARN",
+    "WARNING",
+    "CRITICAL",
+    "FATAL",
+    "FAILED",
+    "FAILURE",
+    "TIMEOUT",
+    "TIMED_OUT",
+    "AUTH_FAILED",
+    "AUTHENTICATION_FAILED",
+    "TUNNEL_DOWN",
+    "TUNNEL_FAILED",
+    "SSL_ERROR",
+    "TLS_ERROR",
+    "CERT_ERROR",
+    "CONNECTION_REFUSED",
+    "CONNECTION_RESET",
+    "UNREACHABLE",
+    "ACCESS_DENIED",
+    "UNAUTHORIZED",
+    "CONNECTOR_DOWN",
+    "BROKER_UNREACHABLE",
 ]
 
 _ZSCALER_KEYWORDS = [
-    "zscaler", "zia", "zpa", "zdx", "zcc",
-    "connector", "app connector",
-    "broker", "z-broker",
-    "gateway", "cloud gateway",
-    "pac", "pac-file", "z-tunnel",
-    "ssl inspection", "ssl-inspection",
-    "forwarding", "traffic forwarding",
-    "enrollment", "oauth",
-    "policy", "access policy",
-    "nanolog", "nss",
+    "zscaler",
+    "zia",
+    "zpa",
+    "zdx",
+    "zcc",
+    "connector",
+    "app connector",
+    "broker",
+    "z-broker",
+    "gateway",
+    "cloud gateway",
+    "pac",
+    "pac-file",
+    "z-tunnel",
+    "ssl inspection",
+    "ssl-inspection",
+    "forwarding",
+    "traffic forwarding",
+    "enrollment",
+    "oauth",
+    "policy",
+    "access policy",
+    "nanolog",
+    "nss",
 ]
 
-_ERROR_CODE_RE = re.compile(
-    r"(?:error|code|status|reason|result)[:\s=]+([A-Z][A-Z0-9_]{2,})", re.I
-)
+_ERROR_CODE_RE = re.compile(r"(?:error|code|status|reason|result)[:\s=]+([A-Z][A-Z0-9_]{2,})", re.I)
 
-_PRODUCT_ZPA_HINTS = ["zpa", "app connector", "private access", "broker", "z-broker",
-                       "zpa.net", "enrollment", "oauth", "microsegmentation"]
-_PRODUCT_ZIA_HINTS = ["zia", "internet access", "pac file", "pac-file", "ssl inspection",
-                       "z-tunnel", "ztunnel", "web proxy", "forwarding", "nanolog", "nss"]
+_PRODUCT_ZPA_HINTS = [
+    "zpa",
+    "app connector",
+    "private access",
+    "broker",
+    "z-broker",
+    "zpa.net",
+    "enrollment",
+    "oauth",
+    "microsegmentation",
+]
+_PRODUCT_ZIA_HINTS = [
+    "zia",
+    "internet access",
+    "pac file",
+    "pac-file",
+    "ssl inspection",
+    "z-tunnel",
+    "ztunnel",
+    "web proxy",
+    "forwarding",
+    "nanolog",
+    "nss",
+]
 _PRODUCT_ZDX_HINTS = ["zdx", "digital experience", "zdx.net", "experience score"]
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 def is_log_content(text: str) -> bool:
     """
@@ -87,6 +135,7 @@ def _get_drain_miner():
         try:
             from drain3 import TemplateMiner
             from drain3.template_miner_config import TemplateMinerConfig
+
             config = TemplateMinerConfig()
             config.drain_depth = 4
             config.drain_sim_th = 0.4
@@ -186,7 +235,7 @@ def detect_product_from_logs(text: str) -> str | None:
     }
 
     best_product = max(scores, key=lambda k: scores[k])
-    best_score   = scores[best_product]
+    best_score = scores[best_product]
 
     if best_score == 0:
         return None

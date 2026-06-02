@@ -12,8 +12,8 @@ import json
 import logging
 import time
 import uuid
+from collections.abc import Iterator
 from contextlib import asynccontextmanager
-from typing import Iterator
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException
@@ -48,6 +48,7 @@ logger = logging.getLogger("zih.api")
 
 # ── startup ──────────────────────────────────────────────────────────────────
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # ── Security warnings ─────────────────────────────────────────────────────
@@ -60,6 +61,7 @@ async def lifespan(app: FastAPI):
 
     # ── Pre-warm embedding model & validate dimension ─────────────────────────
     import pipeline.embedder as _embedder
+
     _embedder.get_model()
     # Validate that the loaded model's output dimension matches EMBEDDING_DIM.
     # A mismatch would cause silent wrong retrieval; catch it at startup instead.
@@ -92,6 +94,7 @@ app.add_middleware(
 
 # ── auth ─────────────────────────────────────────────────────────────────────
 
+
 def verify_api_key(authorization: str = Header(default="")):
     token = authorization.replace("Bearer ", "").strip()
     if not token or token != cfg.API_KEY:
@@ -99,6 +102,7 @@ def verify_api_key(authorization: str = Header(default="")):
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
+
 
 def _parse_model_id(model_id: str) -> tuple[str, str]:
     """
@@ -112,7 +116,7 @@ def _parse_model_id(model_id: str) -> tuple[str, str]:
     providers = list_providers()
     for provider in providers:
         if model_id.startswith(provider + "-") or model_id == provider:
-            model_slug = model_id[len(provider) + 1:] if "-" in model_id[len(provider):] else ""
+            model_slug = model_id[len(provider) + 1 :] if "-" in model_id[len(provider) :] else ""
             # Map short slug back to full model name
             model_name = _slug_to_model(provider, model_slug) if model_slug else cfg.DEFAULT_MODEL
             return provider, model_name
@@ -149,9 +153,7 @@ def _extract_last_user_message(messages) -> tuple[str, list]:
             if isinstance(msg.content, str):
                 return msg.content, []
             # OpenAI vision format: list of content blocks
-            text = " ".join(
-                b.get("text", "") for b in msg.content if b.get("type") == "text"
-            )
+            text = " ".join(b.get("text", "") for b in msg.content if b.get("type") == "text")
             images = [b for b in msg.content if b.get("type") == "image_url"]
             return text, images
     return "", []
@@ -159,12 +161,15 @@ def _extract_last_user_message(messages) -> tuple[str, list]:
 
 # ── streaming helper ─────────────────────────────────────────────────────────
 
+
 def _stream_response(answer: str, model: str) -> Iterator[str]:
     chunk_id = f"chatcmpl-{uuid.uuid4().hex[:16]}"
     created = int(time.time())
 
     opening = ChatCompletionChunk(
-        id=chunk_id, created=created, model=model,
+        id=chunk_id,
+        created=created,
+        model=model,
         choices=[ChunkChoice(delta=ChunkDelta(role="assistant"))],
     )
     yield f"data: {opening.model_dump_json()}\n\n"
@@ -173,13 +178,17 @@ def _stream_response(answer: str, model: str) -> Iterator[str]:
     for i, word in enumerate(words):
         token = word if i == len(words) - 1 else word + " "
         chunk = ChatCompletionChunk(
-            id=chunk_id, created=created, model=model,
+            id=chunk_id,
+            created=created,
+            model=model,
             choices=[ChunkChoice(delta=ChunkDelta(content=token))],
         )
         yield f"data: {chunk.model_dump_json()}\n\n"
 
     terminal = ChatCompletionChunk(
-        id=chunk_id, created=created, model=model,
+        id=chunk_id,
+        created=created,
+        model=model,
         choices=[ChunkChoice(delta=ChunkDelta(), finish_reason="stop")],
     )
     yield f"data: {terminal.model_dump_json()}\n\n"
@@ -187,6 +196,7 @@ def _stream_response(answer: str, model: str) -> Iterator[str]:
 
 
 # ── routes ───────────────────────────────────────────────────────────────────
+
 
 @app.get("/health", response_model=HealthResponse)
 def health():
@@ -280,9 +290,7 @@ def list_models(_=Depends(verify_api_key)):
     for provider, models in all_models().items():
         for model in models:
             slug = model.replace(".", "-").replace("/", "-").replace("_", "-")
-            cards.append(
-                ModelCard(id=f"zih/{provider}-{slug}", created=ts)
-            )
+            cards.append(ModelCard(id=f"zih/{provider}-{slug}", created=ts))
     return ModelListResponse(data=cards)
 
 
@@ -375,11 +383,7 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
         id=f"chatcmpl-{uuid.uuid4().hex[:16]}",
         created=int(time.time()),
         model=req.model,
-        choices=[
-            ChatCompletionChoice(
-                message={"role": "assistant", "content": full_answer}
-            )
-        ],
+        choices=[ChatCompletionChoice(message={"role": "assistant", "content": full_answer})],
         usage=UsageInfo(
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,

@@ -31,7 +31,7 @@ def _parse_frontmatter(text: str) -> tuple[dict, str]:
         return {}, text
 
     fm_block = text[3:end].strip()
-    body = text[end + 3:].strip()
+    body = text[end + 3 :].strip()
 
     meta: dict[str, str] = {}
     for line in fm_block.splitlines():
@@ -95,13 +95,11 @@ def chunk_markdown_file(file_path: Path) -> list[dict[str, Any]]:
         sub_chunks = recursive_splitter.split_text(text)
         for idx, sub in enumerate(sub_chunks):
             sub = sub.strip()
-            if len(sub) < 80:   # skip tiny fragments
+            if len(sub) < 80:  # skip tiny fragments
                 continue
             # Deterministic ID: same URL+section+position always maps to the same
             # Qdrant point, so re-ingesting a page overwrites rather than duplicates.
-            det_id = str(uuid.UUID(hashlib.md5(
-                f"{url}|{section}|{idx}".encode()
-            ).hexdigest()))
+            det_id = str(uuid.UUID(hashlib.md5(f"{url}|{section}|{idx}".encode()).hexdigest()))
             chunks.append(
                 {
                     "chunk_id": det_id,

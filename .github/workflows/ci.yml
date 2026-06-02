@@ -7,6 +7,17 @@ on:
     branches: [main, develop]
 
 jobs:
+  audit:
+    name: Metadata Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check version consistency
+        run: python scripts/audit_metadata.py
+
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest

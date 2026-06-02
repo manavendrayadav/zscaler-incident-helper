@@ -29,10 +29,14 @@ def get_model() -> Any:
     if _model is None:
         if _is_bge_m3():
             from FlagEmbedding import BGEM3FlagModel
-            console.print(f"[dim]Loading embedding model: {cfg.EMBEDDING_MODEL} (dense+sparse)...[/dim]")
+
+            console.print(
+                f"[dim]Loading embedding model: {cfg.EMBEDDING_MODEL} (dense+sparse)...[/dim]"
+            )
             _model = BGEM3FlagModel(cfg.EMBEDDING_MODEL, use_fp16=True)
         else:
             from sentence_transformers import SentenceTransformer
+
             console.print(f"[dim]Loading embedding model: {cfg.EMBEDDING_MODEL}...[/dim]")
             _model = SentenceTransformer(cfg.EMBEDDING_MODEL)
     return _model

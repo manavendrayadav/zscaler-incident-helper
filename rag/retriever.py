@@ -37,6 +37,7 @@ def _get_qdrant_client():
     global _qdrant_client
     if _qdrant_client is None:
         from qdrant_client import QdrantClient
+
         _qdrant_client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=30)
     return _qdrant_client
 
@@ -45,6 +46,7 @@ def _get_reranker():
     global _reranker
     if _reranker is None:
         from sentence_transformers import CrossEncoder
+
         _reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
     return _reranker
 
@@ -53,19 +55,23 @@ def _hits_to_chunks(hits) -> list[SourceChunk]:
     chunks = []
     for hit in hits:
         payload = hit.payload or {}
-        chunks.append(SourceChunk(
-            chunk_id=str(hit.id),
-            text=payload.get("text", ""),
-            url=payload.get("url", ""),
-            title=payload.get("title", ""),
-            product=payload.get("product", ""),
-            section=payload.get("section", ""),
-            score=round(hit.score, 4),
-        ))
+        chunks.append(
+            SourceChunk(
+                chunk_id=str(hit.id),
+                text=payload.get("text", ""),
+                url=payload.get("url", ""),
+                title=payload.get("title", ""),
+                product=payload.get("product", ""),
+                section=payload.get("section", ""),
+                score=round(hit.score, 4),
+            )
+        )
     return chunks
 
 
-def _search_dense(client, query_vector: list[float], limit: int, search_filter) -> list[SourceChunk]:
+def _search_dense(
+    client, query_vector: list[float], limit: int, search_filter
+) -> list[SourceChunk]:
     response = client.query_points(
         collection_name=cfg.COLLECTION_NAME,
         query=query_vector,
@@ -89,7 +95,9 @@ def _search_hybrid(client, query: dict, limit: int, search_filter) -> list[Sourc
         collection_name=cfg.COLLECTION_NAME,
         prefetch=[
             Prefetch(query=dense_vec, using="dense", limit=limit),
-            Prefetch(query=SparseVector(indices=indices, values=values), using="sparse", limit=limit),
+            Prefetch(
+                query=SparseVector(indices=indices, values=values), using="sparse", limit=limit
+            ),
         ],
         query=FusionQuery(fusion=Fusion.RRF),
         limit=limit,

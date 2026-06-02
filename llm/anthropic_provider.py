@@ -29,9 +29,7 @@ class AnthropicProvider(BaseLLMProvider):
             m.content for m in messages if m.role == "system" and isinstance(m.content, str)
         )
         user_messages = [
-            {"role": m.role, "content": m.content}
-            for m in messages
-            if m.role != "system"
+            {"role": m.role, "content": m.content} for m in messages if m.role != "system"
         ]
 
         kwargs: dict = {

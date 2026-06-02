@@ -78,6 +78,7 @@ def _save_embed_cache(chunks: list, embeddings) -> None:
             # Sparse weights can't go into npz directly — save as json sidecar
             sparse_path = EMBED_CACHE.with_suffix(".sparse.json")
             import json as _json
+
             sparse_path.write_text(_json.dumps(embeddings["sparse"]), encoding="utf-8")
         else:
             np.savez_compressed(EMBED_CACHE, dense=embeddings, chunk_ids=chunk_ids, mode=["dense"])
@@ -98,7 +99,9 @@ def _load_embed_cache(chunks: list):
         cached_ids = list(data["chunk_ids"])
         current_ids = [c["chunk_id"] for c in chunks]
         if cached_ids != current_ids:
-            console.print("  [yellow]Embedding cache chunk IDs don't match — re-embedding.[/yellow]")
+            console.print(
+                "  [yellow]Embedding cache chunk IDs don't match — re-embedding.[/yellow]"
+            )
             return None, False
         mode = str(data["mode"][0])
         if mode == "hybrid":
@@ -106,6 +109,7 @@ def _load_embed_cache(chunks: list):
             if not sparse_path.exists():
                 return None, False
             import json as _json
+
             sparse = _json.loads(sparse_path.read_text(encoding="utf-8"))
             return {"dense": data["dense"], "sparse": sparse}, True
         else:
@@ -135,7 +139,9 @@ def main(reset: bool = False, skip_embed: bool = False):
         sys.exit(1)
 
     console.print(f"  -> {len(chunks)} chunks from {len(list(cfg.RAW_DIR.glob('*.md')))} files")
-    console.print(f"  -> Avg chunk size: {sum(len(c['text']) for c in chunks) // len(chunks)} chars")
+    console.print(
+        f"  -> Avg chunk size: {sum(len(c['text']) for c in chunks) // len(chunks)} chars"
+    )
 
     # ── 3. Embed ──────────────────────────────────────────────────────────
     console.print("\n[bold]Step 2/3:[/] Generating embeddings (local, no API cost)…")
@@ -152,7 +158,9 @@ def main(reset: bool = False, skip_embed: bool = False):
         # Try loading cache automatically before running expensive embedding
         embeddings, hit = _load_embed_cache(chunks)
         if hit:
-            console.print("  [green]Loaded embeddings from cache (skipping ~4h computation)[/green]")
+            console.print(
+                "  [green]Loaded embeddings from cache (skipping ~4h computation)[/green]"
+            )
         else:
             embeddings = embed_chunks(chunks)
             _save_embed_cache(chunks, embeddings)
@@ -210,7 +218,11 @@ def main(reset: bool = False, skip_embed: bool = False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ingest crawled Zscaler docs into Qdrant")
-    parser.add_argument("--reset", action="store_true", help="Wipe and re-create the Qdrant collection first")
-    parser.add_argument("--skip-embed", action="store_true", help="Skip embedding step, use cached embeddings")
+    parser.add_argument(
+        "--reset", action="store_true", help="Wipe and re-create the Qdrant collection first"
+    )
+    parser.add_argument(
+        "--skip-embed", action="store_true", help="Skip embedding step, use cached embeddings"
+    )
     args = parser.parse_args()
     main(reset=args.reset, skip_embed=args.skip_embed)

@@ -17,6 +17,7 @@ console = Console(highlight=False, emoji=False)
 
 def _get_client():
     from qdrant_client import QdrantClient
+
     # timeout=120s: default 5s is too short for large batch upserts (13k+ vectors)
     return QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=120)
 
@@ -30,6 +31,7 @@ def ensure_collection(client=None) -> None:
     if cfg.COLLECTION_NAME not in existing:
         if cfg.SPARSE_ENABLED:
             from qdrant_client.models import SparseIndexParams, SparseVectorParams
+
             client.create_collection(
                 collection_name=cfg.COLLECTION_NAME,
                 vectors_config={
@@ -39,13 +41,17 @@ def ensure_collection(client=None) -> None:
                     "sparse": SparseVectorParams(index=SparseIndexParams()),
                 },
             )
-            console.print(f"[green]OK[/] Created hybrid collection: [bold]{cfg.COLLECTION_NAME}[/] (dense={cfg.EMBEDDING_DIM}d + sparse)")
+            console.print(
+                f"[green]OK[/] Created hybrid collection: [bold]{cfg.COLLECTION_NAME}[/] (dense={cfg.EMBEDDING_DIM}d + sparse)"
+            )
         else:
             client.create_collection(
                 collection_name=cfg.COLLECTION_NAME,
                 vectors_config=VectorParams(size=cfg.EMBEDDING_DIM, distance=Distance.COSINE),
             )
-            console.print(f"[green]OK[/] Created collection: [bold]{cfg.COLLECTION_NAME}[/] (dense={cfg.EMBEDDING_DIM}d)")
+            console.print(
+                f"[green]OK[/] Created collection: [bold]{cfg.COLLECTION_NAME}[/] (dense={cfg.EMBEDDING_DIM}d)"
+            )
     else:
         console.print(f"[dim]Collection '{cfg.COLLECTION_NAME}' already exists.[/dim]")
 
@@ -67,7 +73,7 @@ def upsert_chunks(
     chunks: list[dict[str, Any]],
     embeddings: Union[np.ndarray, dict],
     client=None,
-    batch_size: int = 32,   # 32 keeps each HTTP call well under timeout; was 64
+    batch_size: int = 32,  # 32 keeps each HTTP call well under timeout; was 64
 ) -> list[str]:
     """
     Upsert chunks into Qdrant. Accepts dense-only (ndarray) or hybrid (dict) embeddings.
@@ -77,7 +83,7 @@ def upsert_chunks(
 
     is_hybrid = isinstance(embeddings, dict)
     if is_hybrid:
-        dense_vecs = embeddings["dense"]   # (N, DIM)
+        dense_vecs = embeddings["dense"]  # (N, DIM)
         sparse_vecs = embeddings["sparse"]  # list of N dicts {token_id: weight}
     else:
         dense_vecs = embeddings
@@ -87,9 +93,9 @@ def upsert_chunks(
     point_ids = []
 
     for i in range(0, len(chunks), batch_size):
-        batch_chunks = chunks[i: i + batch_size]
-        batch_dense = dense_vecs[i: i + batch_size]
-        batch_sparse = sparse_vecs[i: i + batch_size] if sparse_vecs is not None else None
+        batch_chunks = chunks[i : i + batch_size]
+        batch_dense = dense_vecs[i : i + batch_size]
+        batch_sparse = sparse_vecs[i : i + batch_size] if sparse_vecs is not None else None
 
         points = []
         for j, (chunk, vec) in enumerate(zip(batch_chunks, batch_dense)):
@@ -98,17 +104,20 @@ def upsert_chunks(
 
             if is_hybrid and batch_sparse is not None:
                 from qdrant_client.models import SparseVector
+
                 sw = batch_sparse[j]  # {token_id_str: weight}
                 indices = [int(k) for k in sw]
                 values = [float(v) for v in sw.values()]
-                points.append(PointStruct(
-                    id=cid,
-                    vector={
-                        "dense": vec.tolist(),
-                        "sparse": SparseVector(indices=indices, values=values),
-                    },
-                    payload=payload,
-                ))
+                points.append(
+                    PointStruct(
+                        id=cid,
+                        vector={
+                            "dense": vec.tolist(),
+                            "sparse": SparseVector(indices=indices, values=values),
+                        },
+                        payload=payload,
+                    )
+                )
             else:
                 points.append(PointStruct(id=cid, vector=vec.tolist(), payload=payload))
 
@@ -125,9 +134,7 @@ def get_collection_stats(client=None) -> dict:
     try:
         info = client.get_collection(cfg.COLLECTION_NAME)
         vectors = (
-            getattr(info, "indexed_vectors_count", None)
-            or getattr(info, "vectors_count", 0)
-            or 0
+            getattr(info, "indexed_vectors_count", None) or getattr(info, "vectors_count", 0) or 0
         )
         return {
             "vectors_count": vectors,
