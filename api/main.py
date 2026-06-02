@@ -13,15 +13,20 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
+from typing import Iterator
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 from api.models import (
     ChatCompletionChoice,
+    ChatCompletionChunk,
     ChatCompletionRequest,
     ChatCompletionResponse,
+    ChunkChoice,
+    ChunkDelta,
     ConfigStatus,
     HealthResponse,
     KnowledgeBaseStatus,
@@ -152,6 +157,35 @@ def _extract_last_user_message(messages) -> tuple[str, list]:
     return "", []
 
 
+# ── streaming helper ─────────────────────────────────────────────────────────
+
+def _stream_response(answer: str, model: str) -> Iterator[str]:
+    chunk_id = f"chatcmpl-{uuid.uuid4().hex[:16]}"
+    created = int(time.time())
+
+    opening = ChatCompletionChunk(
+        id=chunk_id, created=created, model=model,
+        choices=[ChunkChoice(delta=ChunkDelta(role="assistant"))],
+    )
+    yield f"data: {opening.model_dump_json()}\n\n"
+
+    words = answer.split(" ")
+    for i, word in enumerate(words):
+        token = word if i == len(words) - 1 else word + " "
+        chunk = ChatCompletionChunk(
+            id=chunk_id, created=created, model=model,
+            choices=[ChunkChoice(delta=ChunkDelta(content=token))],
+        )
+        yield f"data: {chunk.model_dump_json()}\n\n"
+
+    terminal = ChatCompletionChunk(
+        id=chunk_id, created=created, model=model,
+        choices=[ChunkChoice(delta=ChunkDelta(), finish_reason="stop")],
+    )
+    yield f"data: {terminal.model_dump_json()}\n\n"
+    yield "data: [DONE]\n\n"
+
+
 # ── routes ───────────────────────────────────────────────────────────────────
 
 @app.get("/health", response_model=HealthResponse)
@@ -252,7 +286,7 @@ def list_models(_=Depends(verify_api_key)):
     return ModelListResponse(data=cards)
 
 
-@app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
+@app.post("/v1/chat/completions")
 def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
     """
     Main RAG endpoint.
@@ -262,13 +296,6 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
     4. Return an OpenAI-format response with sources appended.
     """
     from rag.log_parser import detect_product_from_logs, extract_log_signals, is_log_content
-
-    # Streaming is not yet implemented — reject early rather than silently ignoring
-    if req.stream:
-        raise HTTPException(
-            status_code=501,
-            detail="Streaming responses (stream=true) are not yet supported. Set stream=false.",
-        )
 
     query, images = _extract_last_user_message(req.messages)
     if not query and not images:
@@ -336,6 +363,13 @@ def chat_completions(req: ChatCompletionRequest, _=Depends(verify_api_key)):
             )
 
     full_answer = answer + sources_footer
+
+    if req.stream:
+        return StreamingResponse(
+            _stream_response(full_answer, req.model),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     return ChatCompletionResponse(
         id=f"chatcmpl-{uuid.uuid4().hex[:16]}",

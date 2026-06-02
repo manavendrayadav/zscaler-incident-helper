@@ -46,6 +46,25 @@ class ChatCompletionResponse(BaseModel):
     usage: UsageInfo
 
 
+class ChunkDelta(BaseModel):
+    role: str | None = None
+    content: str | None = None
+
+
+class ChunkChoice(BaseModel):
+    index: int = 0
+    delta: ChunkDelta
+    finish_reason: str | None = None
+
+
+class ChatCompletionChunk(BaseModel):
+    id: str
+    object: str = "chat.completion.chunk"
+    created: int
+    model: str
+    choices: list[ChunkChoice]
+
+
 # ── /v1/models ───────────────────────────────────────────────────────────────
 
 class ModelCard(BaseModel):
