@@ -133,6 +133,18 @@ OLLAMA_BASE_URL=http://localhost:11434
 
 Leave all other values at their defaults for first-time setup.
 
+### 2.1b Install host Python dependencies
+
+Several `make` commands (`make crawl`, `make ingest`, `make doctor`, `make validate-config`) run Python scripts **directly on your host machine**, outside of Docker. Install their dependencies once:
+
+```bash
+make setup
+```
+
+This installs all packages from `requirements.txt` into your host Python environment and installs the Playwright Chromium browser (used as a fallback crawler). Re-run this after pulling new versions of the project.
+
+> **Note:** The Docker containers have all dependencies baked in — `make setup` is only needed on the host for the scripts you run in your terminal.
+
 ### 2.2 Validate the configuration
 
 ```bash

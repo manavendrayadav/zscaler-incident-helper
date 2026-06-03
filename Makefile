@@ -43,7 +43,7 @@ help:
 	@echo ""
 
 setup:
-	pip install qdrant-client groq openai aiofiles rich tqdm langchain-text-splitters
+	pip install -r requirements.txt
 	playwright install chromium
 
 up:

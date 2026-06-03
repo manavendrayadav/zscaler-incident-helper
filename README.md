@@ -65,14 +65,17 @@ cd zscaler-incident-helper
 # 2. Configure — add at minimum GROQ_API_KEY (free at console.groq.com)
 cp .env.example .env
 
-# 3. Start all Docker services
+# 3. Install host Python deps (needed for make crawl / make ingest / make doctor)
+make setup
+
+# 4. Start all Docker services
 make up
 
-# 4. Crawl Zscaler docs + index into Qdrant
+# 5. Crawl Zscaler docs + index into Qdrant
 make crawl
 make ingest
 
-# 5. Open the chat UI
+# 6. Open the chat UI
 open http://localhost:3000   # or visit manually
 ```
 
@@ -252,6 +255,7 @@ Each team member needs:
 git clone <repo>
 cd zscaler-incident-helper
 cp .env.example .env        # add GROQ_API_KEY
+make setup                  # install host Python deps + Playwright browser
 make up
 make crawl && make ingest
 make doctor                 # verify everything is green
