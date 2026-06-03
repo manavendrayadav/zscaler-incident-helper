@@ -238,8 +238,14 @@ async def _run_crawl_async(
 def _ingest_batch(urls: list[str], manifest: dict) -> int:
     from pipeline.chunker import chunk_files
     from pipeline.embedder import embed_chunks
-    from pipeline.indexer import ensure_collection, update_manifest_chunk_ids, upsert_chunks
+    from pipeline.indexer import (
+        check_qdrant_reachable,
+        ensure_collection,
+        update_manifest_chunk_ids,
+        upsert_chunks,
+    )
 
+    check_qdrant_reachable()
     ensure_collection()
     files = []
     for url in urls:

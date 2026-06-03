@@ -23,6 +23,22 @@ def _get_client():
     return QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=120)
 
 
+def check_qdrant_reachable() -> None:
+    """Pre-flight: verify Qdrant is up before doing any work. Exits cleanly if not."""
+    import httpx
+
+    url = f"http://{cfg.QDRANT_HOST}:{cfg.QDRANT_PORT}/healthz"
+    try:
+        r = httpx.get(url, timeout=5)
+        r.raise_for_status()
+    except Exception:
+        console.print(
+            f"[bold red]Cannot reach Qdrant at {cfg.QDRANT_HOST}:{cfg.QDRANT_PORT}.[/bold red]\n"
+            "Is the Docker stack running?  Start it with:  [bold]make up[/bold]"
+        )
+        raise SystemExit(1)
+
+
 def ensure_collection(client=None) -> None:
     """Create the Qdrant collection if it doesn't exist."""
     from qdrant_client.models import Distance, VectorParams

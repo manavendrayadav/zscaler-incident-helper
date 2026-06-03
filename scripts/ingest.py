@@ -31,6 +31,7 @@ from config import cfg
 from pipeline.chunker import chunk_all_files
 from pipeline.embedder import embed_chunks
 from pipeline.indexer import (
+    check_qdrant_reachable,
     ensure_collection,
     get_collection_stats,
     update_manifest_chunk_ids,
@@ -125,6 +126,9 @@ def _load_embed_cache(chunks: list):
 
 def main(reset: bool = False, skip_embed: bool = False):
     console.rule("[bold cyan]Zscaler RAG — Ingestion Pipeline[/]")
+
+    # ── 0. Pre-flight: Qdrant must be reachable before we do anything ─────
+    check_qdrant_reachable()
 
     # ── 1. Qdrant setup ───────────────────────────────────────────────────
     if reset:
