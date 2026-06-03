@@ -49,6 +49,7 @@ setup:
 	python -m playwright install chromium
 
 up:
+	@docker info > /dev/null 2>&1 || (echo "ERROR: Docker is not running. Open Docker Desktop and wait for the whale icon to be steady, then retry." && exit 1)
 	@echo "Starting Qdrant first (health check takes 30-60s)..."
 	docker-compose up -d qdrant
 	@echo "Waiting for Qdrant to be healthy..."

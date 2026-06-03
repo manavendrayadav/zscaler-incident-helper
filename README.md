@@ -320,6 +320,7 @@ CONNECTOR_DOWN → CONNECTOR_UP
 | Responses are generic | 0 chunks in Qdrant | `make ingest` (crawl first if needed) |
 | 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zih-api` |
 | Groq call shows Zscaler block page | ZCC SSL inspection intercept | Use Ollama or add bypass in ZIA |
+| `make up` fails with "500 Internal Server Error" | Docker Desktop not running | Open Docker Desktop, wait for whale icon to be steady, then retry |
 | `make ingest` fails with "408" immediately at startup (before embedding) | Docker stack not running | `make up`, wait 60s, then retry |
 | `make crawl` or `make ingest` fails with "408 Request Timeout" on upsert | qdrant-client version too new for the pinned server | `pip install "qdrant-client>=1.14.0,<1.15.0"` then retry |
 | `make crawl` crashes with "Executable doesn't exist" | Playwright browser not downloaded | `python -m playwright install chromium` |
