@@ -44,7 +44,7 @@ help:
 
 setup:
 	pip install -r requirements.txt
-	playwright install chromium
+	python -m playwright install chromium
 
 up:
 	@echo "Starting Qdrant first (health check takes 30-60s)..."

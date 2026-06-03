@@ -141,7 +141,7 @@ Several `make` commands (`make crawl`, `make ingest`, `make doctor`, `make valid
 make setup
 ```
 
-This installs all packages from `requirements.txt` into your host Python environment and installs the Playwright Chromium browser (used as a fallback crawler). Re-run this after pulling new versions of the project.
+This installs all packages from `requirements.txt` into your host Python environment and installs the Playwright Chromium browser (used as a fallback crawler) via `python -m playwright install chromium` — the module form works on all platforms, including Windows where the bare `playwright` CLI may not be in PATH. Re-run this after pulling new versions of the project.
 
 > **Note:** The Docker containers have all dependencies baked in — `make setup` is only needed on the host for the scripts you run in your terminal.
 

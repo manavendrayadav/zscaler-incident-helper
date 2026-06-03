@@ -315,6 +315,8 @@ CONNECTOR_DOWN → CONNECTOR_UP
 | Responses are generic | 0 chunks in Qdrant | `make ingest` (crawl first if needed) |
 | 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zih-api` |
 | Groq call shows Zscaler block page | ZCC SSL inspection intercept | Use Ollama or add bypass in ZIA |
+| `make crawl` crashes with "Executable doesn't exist" | Playwright browser not downloaded | `python -m playwright install chromium` |
+| `playwright install` not recognized (Windows) | Scripts\ not in PATH | Use `python -m playwright install chromium` instead |
 
 See [docs/OPERATIONS.md §7](docs/OPERATIONS.md#7-troubleshooting) for all error patterns.
 

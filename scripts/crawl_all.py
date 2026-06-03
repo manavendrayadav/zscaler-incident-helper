@@ -268,12 +268,29 @@ def _ingest_batch(urls: list[str], manifest: dict) -> int:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
+def _check_playwright_browser() -> None:
+    from pathlib import Path
+
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as pw:
+        exe = pw.chromium.executable_path
+    if not Path(exe).exists():
+        console.print(
+            "[bold red]Playwright Chromium browser not found.[/bold red]\n"
+            "Run:  [bold]python -m playwright install chromium[/bold]  then retry."
+        )
+        raise SystemExit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Zscaler full-site crawler (sequential)")
     parser.add_argument("--product", choices=["zia", "zpa", "zdx", "zcc", "deception"])
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--no-ingest", action="store_true")
     args = parser.parse_args()
+
+    _check_playwright_browser()
 
     console.rule("[bold cyan]Zscaler Full-Site Crawl[/]")
     console.print("Fetching sitemap …")
