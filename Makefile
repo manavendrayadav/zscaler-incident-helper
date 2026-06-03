@@ -1,4 +1,4 @@
-.PHONY: setup crawl crawl-all update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit preflight help
+.PHONY: setup crawl crawl-all crawl-gpu update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit preflight help
 
 help:
 	@echo ""
@@ -15,9 +15,11 @@ help:
 	@echo "  make reset-db         Wipe Qdrant volume and restart (fresh index)"
 	@echo ""
 	@echo "  Knowledge base"
-	@echo "  make crawl            Crawl Zscaler docs (skips unchanged pages — safe to run anytime)"
-	@echo "  make crawl-all        Same as make crawl + auto-ingest after crawl"
-	@echo "  make update           Same as make crawl (crawl_all.py is always incremental)"
+	@echo "  make crawl            Crawl Zscaler docs — saves markdown only, no embedding (CPU safe)"
+	@echo "  make ingest           Embed + index all crawled pages into Qdrant (run after crawl)"
+	@echo "  make crawl-all        Full pipeline: crawl then ingest sequentially (CPU safe)"
+	@echo "  make crawl-gpu        Crawl + inline ingest every 100 pages (GPU machines only)"
+	@echo "  make update           Incremental crawl of new/changed pages only (no embedding)"
 	@echo "  make ingest           Chunk + embed + index crawled pages into Qdrant"
 	@echo ""
 	@echo "  Ollama (local/private LLM)"
@@ -65,16 +67,26 @@ up-infra:
 	docker-compose up -d qdrant crawl4ai
 	@echo "Qdrant + Crawl4AI starting. Wait ~20s then run: make crawl"
 
-# crawl and update both use crawl_all.py — it always skips unchanged pages via the manifest.
-# There is no separate "initial vs incremental" distinction needed.
+# Crawl only — saves markdown files to data/raw/, no embedding.
+# Safe on all hardware (CPU or GPU). Run `make ingest` after crawl finishes.
 crawl:
-	python scripts/crawl_all.py
+	python scripts/crawl_all.py --no-ingest
 
+# Full pipeline for CPU machines: crawl all pages then embed+index in one clean run.
+# Keeps the two heavy steps separate so long CPU embedding doesn't timeout Qdrant.
 crawl-all:
+	python scripts/crawl_all.py --no-ingest
+	python scripts/ingest.py
+
+# Crawl + inline ingest every 100 pages.
+# Only use this on GPU machines where bge-m3 embedding takes <2 min/batch.
+# On CPU (~40 min/batch) the long embedding blocks the connection and causes 408 errors.
+crawl-gpu:
 	python scripts/crawl_all.py
 
+# Incremental update — crawl new/changed pages only (skips unchanged via manifest).
 update:
-	python scripts/crawl_all.py
+	python scripts/crawl_all.py --no-ingest
 
 ingest:
 	python scripts/ingest.py

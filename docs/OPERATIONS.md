@@ -395,18 +395,32 @@ re-indexing a page simply overwrites existing Qdrant points. No duplicates.
 
 ### 4.3 Full crawl (initial setup or after reset)
 
+> **CPU vs GPU — use the right command:**
+>
+> | Machine | Command | How it works |
+> |---------|---------|--------------|
+> | **CPU (most machines)** | `make crawl` then `make ingest` | Crawl saves markdown only; ingest embeds everything in one run after crawl finishes |
+> | **CPU shortcut** | `make crawl-all` | Same as above but chained automatically |
+> | **GPU** | `make crawl-gpu` | Inline ingest every 100 pages — only safe if bge-m3 embedding takes <2 min/batch |
+>
+> On CPU, bge-m3 takes **~40 min per 100-page batch**. If you use `make crawl-gpu` on
+> CPU, the long embedding blocks the Qdrant connection and causes **408 Request Timeout**
+> errors. Always use `make crawl` + `make ingest` on CPU machines.
+
+**Recommended (CPU):**
 ```bash
-make crawl-all
+make crawl      # crawl all pages, save markdown only (30–60 min)
+make ingest     # embed + index everything in one run (~3–4 h on CPU)
 ```
 
-Crawls all ~1,825 pages from the Zscaler sitemap. Includes auto-ingest.
-Expected runtime: 2–4 hours total (crawl ≈ 30–60 min, embedding ≈ 3–4 hours on CPU).
-
-To run crawl and ingest separately:
-
+**Shortcut (CPU):**
 ```bash
-python scripts/crawl_all.py --no-ingest   # crawl only
-make ingest                                # then ingest separately
+make crawl-all  # same as above, chained
+```
+
+**GPU only:**
+```bash
+make crawl-gpu  # crawl + inline ingest every 100 pages (~2–4 h total with GPU)
 ```
 
 ### 4.4 Wipe and re-index from scratch

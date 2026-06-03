@@ -71,11 +71,13 @@ make setup
 # 4. Start all Docker services
 make up
 
-# 5. Crawl Zscaler docs + index into Qdrant
+# 5. Crawl Zscaler docs (saves markdown only — no embedding, safe on CPU)
 make crawl
+
+# 6. Embed + index into Qdrant (run after crawl finishes)
 make ingest
 
-# 6. Open the chat UI
+# 7. Open the chat UI
 open http://localhost:3000   # or visit manually
 ```
 
@@ -225,9 +227,11 @@ The Zscaler sitemap contains **4,103 pages** across ZIA, ZPA, ZDX, and ZCC. The 
 | `make setup` | Install host Python deps + Playwright browser |
 | `make up` | Start full Docker stack |
 | `make up-infra` | Start only Qdrant + Crawl4AI |
-| `make crawl` | Initial crawl of hardcoded Phase 1 URLs |
-| `make update` | Incremental crawl (new/changed pages from sitemap) |
-| `make ingest` | Chunk + embed + index into Qdrant |
+| `make crawl` | Crawl Zscaler docs — markdown only, **no embedding** (CPU safe) |
+| `make ingest` | Embed + index all crawled pages into Qdrant (run after `make crawl`) |
+| `make crawl-all` | Full pipeline: crawl then ingest sequentially (CPU safe) |
+| `make crawl-gpu` | Crawl + inline ingest every 100 pages (**GPU machines only**) |
+| `make update` | Incremental crawl of new/changed pages only (no embedding) |
 | `make doctor` | System health check |
 | `make down` | Stop all services |
 | `make reset-db` | Wipe Qdrant volume (fresh start) |
@@ -257,7 +261,8 @@ cd zscaler-incident-helper
 cp .env.example .env        # add GROQ_API_KEY
 make setup                  # install host Python deps + Playwright browser
 make up
-make crawl && make ingest
+make crawl                  # crawl docs (markdown only, safe on CPU)
+make ingest                 # embed + index into Qdrant
 make doctor                 # verify everything is green
 ```
 
