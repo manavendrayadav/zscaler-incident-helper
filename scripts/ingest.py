@@ -79,7 +79,11 @@ def _save_embed_cache(chunks: list, embeddings) -> None:
             sparse_path = EMBED_CACHE.with_suffix(".sparse.json")
             import json as _json
 
-            sparse_path.write_text(_json.dumps(embeddings["sparse"]), encoding="utf-8")
+            # Convert numpy float32 → Python float before JSON dump (float32 is not JSON serializable)
+            sparse_path.write_text(
+                _json.dumps([{k: float(v) for k, v in row.items()} for row in embeddings["sparse"]]),
+                encoding="utf-8",
+            )
         else:
             np.savez_compressed(EMBED_CACHE, dense=embeddings, chunk_ids=chunk_ids, mode=["dense"])
         console.print(f"  [dim]Embedding cache saved → {EMBED_CACHE}[/dim]")

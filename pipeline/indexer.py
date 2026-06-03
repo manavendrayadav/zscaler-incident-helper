@@ -5,6 +5,7 @@ Chunk IDs are deterministic (MD5 of url|section|idx) — safe to upsert repeated
 """
 
 import json
+import time
 from typing import Any, Union
 
 import numpy as np
@@ -69,6 +70,30 @@ def delete_chunks_by_ids(chunk_ids: list[str], client=None) -> None:
     )
 
 
+def _upsert_with_retry(
+    client,
+    collection_name: str,
+    points,
+    retries: int = 3,
+    delay: float = 5.0,
+) -> None:
+    """Upsert with retry + fresh connection on failure (handles stale connections after long CPU embedding)."""
+    for attempt in range(retries):
+        try:
+            client.upsert(collection_name=collection_name, points=points)
+            return
+        except Exception as e:
+            if attempt < retries - 1:
+                console.print(
+                    f"  [yellow]Upsert attempt {attempt + 1} failed ({e}), "
+                    f"retrying in {delay}s with fresh connection…[/yellow]"
+                )
+                time.sleep(delay)
+                client = _get_client()  # fresh connection avoids stale HTTP state
+            else:
+                raise
+
+
 def upsert_chunks(
     chunks: list[dict[str, Any]],
     embeddings: Union[np.ndarray, dict],
@@ -123,7 +148,7 @@ def upsert_chunks(
 
             point_ids.append(cid)
 
-        client.upsert(collection_name=cfg.COLLECTION_NAME, points=points)
+        _upsert_with_retry(client, cfg.COLLECTION_NAME, points)
 
     return point_ids
 
