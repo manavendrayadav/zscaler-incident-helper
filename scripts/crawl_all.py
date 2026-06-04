@@ -341,9 +341,10 @@ def main():
     console.print(f"  Chunks   : +{total_chunks} this run")
     console.print(f"  Time     : {elapsed // 60}m {elapsed % 60}s")
 
-    remaining = len({e.url for e in fetch_sitemap(filter_relevant=False)} - set(manifest.keys()))
+    all_known = {e.url for e in fetch_sitemap(filter_relevant=False)}
+    remaining = len(all_known - set(manifest.keys()))
     if remaining == 0:
-        console.print("\n[bold green]ALL 1,822 PAGES SCRAPED![/]")
+        console.print(f"\n[bold green]ALL {len(all_known)} PAGES SCRAPED![/]")
     else:
         console.print(f"\n[yellow]{remaining} pages still remaining — run again to continue.[/]")
 

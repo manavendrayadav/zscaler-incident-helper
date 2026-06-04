@@ -51,7 +51,7 @@ def load_manifest() -> dict:
 
 def reset_collection():
     from qdrant_client import QdrantClient
-    from qdrant_client.models import VectorParams
+    from qdrant_client.models import Distance, VectorParams
 
     client = QdrantClient(host=cfg.QDRANT_HOST, port=cfg.QDRANT_PORT, timeout=120)
     existing = [c.name for c in client.get_collections().collections]
@@ -60,7 +60,7 @@ def reset_collection():
         console.print(f"[yellow]WARN Deleted collection:[/] {cfg.COLLECTION_NAME}")
     client.create_collection(
         collection_name=cfg.COLLECTION_NAME,
-        vectors_config=VectorParams(size=cfg.EMBEDDING_DIM, distance=cfg.EMBEDDING_DIM),
+        vectors_config=VectorParams(size=cfg.EMBEDDING_DIM, distance=Distance.COSINE),
     )
     console.print(f"[green]OK Re-created collection:[/] {cfg.COLLECTION_NAME}")
 

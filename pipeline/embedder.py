@@ -7,14 +7,6 @@ bge-m3 returns:
   lexical_weights — list[dict{token_id: weight}] for keyword/BM25-style matching
 """
 
-import os
-
-# Disable parallel tokenization to suppress Python 3.12 + multiprocess cleanup noise.
-# The ResourceTracker AttributeError at script exit is a known Python 3.12 bug in the
-# multiprocess library used by FlagEmbedding. Setting this env var avoids it entirely.
-# Does not affect embedding quality — only disables parallel pre-tokenization.
-os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
-
 from typing import Any, Union
 
 import numpy as np
