@@ -321,6 +321,9 @@ CONNECTOR_DOWN → CONNECTOR_UP
 | 401 on API calls | Missing `Bearer ` prefix | Use `Authorization: Bearer zih-api` |
 | Groq call shows Zscaler block page | ZCC SSL inspection intercept | Use Ollama or add bypass in ZIA |
 | `make up` fails with "500 Internal Server Error" | Docker Desktop not running | Open Docker Desktop, wait for whale icon to be steady, then retry |
+| `make up` shows 500 after Docker is open | WSL2 Linux engine crashed | Run `wsl --shutdown` (as Admin), quit and reopen Docker Desktop |
+| `docker compose build rag-api` fails with "Read timed out" on patchright | Corporate network timeout on 47 MB package | `git pull` then retry — now uses `requirements-api.txt` (no patchright) |
+| Upsert 408 after long embedding run | qdrant-client version mismatch | `git pull && make setup` then `python scripts/ingest.py --skip-embed` |
 | `make ingest` fails with "408" immediately at startup (before embedding) | Docker stack not running | `make up`, wait 60s, then retry |
 | `make crawl` or `make ingest` fails with "408 Request Timeout" on upsert | qdrant-client version too new for the pinned server | `pip install "qdrant-client>=1.14.0,<1.15.0"` then retry |
 | `make crawl` crashes with "Executable doesn't exist" | Playwright browser not downloaded | `python -m playwright install chromium` |

@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-api.txt .
+RUN pip install --no-cache-dir --timeout 300 -r requirements-api.txt
 
 # ── Pre-download models at build time ────────────────────────────────────────
 # Baking models into the image layer means:

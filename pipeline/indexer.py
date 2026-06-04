@@ -38,6 +38,21 @@ def check_qdrant_reachable() -> None:
         )
         raise SystemExit(1)
 
+    # Version compatibility warning — qdrant-client minor version must be ≤ server minor
+    try:
+        from importlib.metadata import version as pkg_version
+        from packaging.version import Version
+
+        installed = Version(pkg_version("qdrant-client"))
+        if installed.major != 1 or installed.minor > 14:
+            console.print(
+                f"[bold yellow]WARN: qdrant-client {installed} is incompatible with "
+                f"server v1.14.1 (minor diff > 1).[/bold yellow]\n"
+                "Run:  [bold]pip install 'qdrant-client>=1.14.0,<1.15.0'[/bold]  then retry."
+            )
+    except Exception:
+        pass  # skip silently if packaging metadata not available
+
 
 def ensure_collection(client=None) -> None:
     """Create the Qdrant collection if it doesn't exist."""
