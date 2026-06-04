@@ -51,11 +51,11 @@ setup:
 up:
 	@python -c "import subprocess,sys; r=subprocess.run(['docker','info'],capture_output=True); sys.exit(0) if r.returncode==0 else (print('ERROR: Docker is not running. Open Docker Desktop and wait for the whale icon to be steady, then retry.') or sys.exit(1))"
 	@echo "Starting Qdrant first (health check takes 30-60s)..."
-	docker-compose up -d qdrant
+	docker compose up -d qdrant
 	@echo "Waiting for Qdrant to be healthy..."
 	python scripts/wait_healthy.py zih-qdrant 120
 	@echo "Starting remaining services..."
-	docker-compose up -d
+	docker compose up -d
 	@echo ""
 	@echo "  Services started. Run 'make logs' and wait for 'Application startup complete.'"
 	@echo "  OpenWebUI  → http://localhost:3000"
@@ -65,7 +65,7 @@ up:
 	@echo ""
 
 up-infra:
-	docker-compose up -d qdrant crawl4ai
+	docker compose up -d qdrant crawl4ai
 	@echo "Qdrant + Crawl4AI starting. Wait ~20s then run: make crawl"
 
 # Crawl only — saves markdown files to data/raw/, no embedding.
@@ -93,20 +93,20 @@ ingest:
 	python scripts/ingest.py
 
 down:
-	docker-compose down
+	docker compose down
 
 logs:
-	docker-compose logs -f rag-api
+	docker compose logs -f rag-api
 
 logs-crawl4ai:
-	docker-compose logs -f crawl4ai
+	docker compose logs -f crawl4ai
 
 shell:
-	docker-compose exec rag-api bash
+	docker compose exec rag-api bash
 
 reset-db:
-	docker-compose down -v
-	docker-compose up -d qdrant
+	docker compose down -v
+	docker compose up -d qdrant
 	@echo "Qdrant volume wiped. Run 'make ingest' to re-index."
 
 doctor:
