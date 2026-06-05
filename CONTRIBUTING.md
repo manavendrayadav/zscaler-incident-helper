@@ -8,7 +8,9 @@ Thank you for contributing to the Zscaler RAG Incident Helper.
 git clone <repo> && cd zscaler-incident-helper
 pip install -e ".[dev]"   # runtime + pytest, ruff, mypy, pre-commit
 pre-commit install
-cp .env.example .env      # set GROQ_API_KEY
+cp .env.example .env      # Linux/macOS  — set GROQ_API_KEY
+# copy .env.example .env  # Windows cmd
+# Copy-Item .env.example .env  # Windows PowerShell
 make up && make validate-config
 ```
 

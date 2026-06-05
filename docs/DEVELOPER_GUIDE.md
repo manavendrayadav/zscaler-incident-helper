@@ -406,11 +406,19 @@ git clone https://github.com/manavendrayadav/zscaler-incident-helper.git
 cd zscaler-incident-helper
 
 python -m venv .venv
-source .venv/bin/activate        # Linux/Mac
-# .venv\Scripts\activate         # Windows
+
+# Activate the virtual environment:
+#   Linux/macOS (bash/zsh):   source .venv/bin/activate
+#   Windows PowerShell:       .venv\Scripts\Activate.ps1
+#   Windows Git Bash / WSL2:  source .venv/Scripts/activate
 
 pip install -e ".[dev]"          # runtime + pytest, ruff, mypy, pre-commit
-cp .env.example .env             # set GROQ_API_KEY at minimum
+
+# Copy the env template:
+#   Linux/macOS:  cp .env.example .env
+#   Windows cmd:  copy .env.example .env
+#   PowerShell:   Copy-Item .env.example .env
+# Then set GROQ_API_KEY at minimum.
 pre-commit install                # install git hooks
 make up                          # start Docker stack
 make validate-config             # verify connections

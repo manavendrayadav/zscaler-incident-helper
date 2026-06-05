@@ -115,7 +115,7 @@ doctor:
 ollama-setup:
 	docker compose --profile local-llm up -d ollama
 	@echo "Waiting 10s for Ollama to start..."
-	@sleep 10
+	@python -c "import time; time.sleep(10)"
 	docker exec zih-ollama ollama pull llama3.2
 	docker exec zih-ollama ollama pull llama3.2-vision
 	@echo ""
@@ -165,9 +165,7 @@ pre-commit:
 
 preflight:
 	@echo "=== Staged file safety check ==="
-	@git diff --staged --name-only | grep -iE "\.env$$|\.key$$|secret|^data/" \
-		&& echo "WARNING: Potentially sensitive file staged — review before pushing!" \
-		|| echo "OK — no sensitive files detected."
+	@python scripts/check_staged.py
 	@echo ""
 	@echo "=== CI checks (lint + typecheck + tests) ==="
 	$(MAKE) ci

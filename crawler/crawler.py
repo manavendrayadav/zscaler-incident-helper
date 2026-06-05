@@ -303,7 +303,7 @@ async def _crawl_single(url: str, product: str, sitemap_lastmod: str, use_api: b
         markdown = None
 
         if use_api:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             markdown = await loop.run_in_executor(
                 None, _crawl_via_crawl4ai_api, url, cfg.CRAWL4AI_BASE_URL
             )
