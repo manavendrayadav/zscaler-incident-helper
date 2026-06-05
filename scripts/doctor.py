@@ -34,8 +34,10 @@ RAG_API_URL = "http://localhost:8000"
 QDRANT_URL = "http://localhost:6333"
 CRAWL4AI_URL = "http://localhost:11235"
 OPENWEBUI_URL = "http://localhost:3000"
-MANIFEST_FILE = Path(__file__).parent.parent / "data" / "crawl_manifest.json"
-RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
+from config import cfg  # noqa: E402 — after sys.path.insert above
+
+MANIFEST_FILE = cfg.MANIFEST_FILE
+RAW_DIR = cfg.RAW_DIR
 COLLECTION = os.getenv("COLLECTION_NAME", "zscaler_docs")
 
 console = Console(highlight=False, emoji=False, markup=True)
@@ -276,8 +278,10 @@ def render_keys(
 def render_knowledge_base(stats: dict) -> Panel:
     if stats.get("missing"):
         return Panel(
-            "[red]data/crawl_manifest.json not found.[/]\n"
-            "Run [bold cyan]make crawl[/] to start crawling.",
+            f"[red]{cfg.MANIFEST_FILE} not found.[/]\n"
+            "→ If you have existing data, set [bold]DATA_DIR=[/] in .env to point to it.\n"
+            "→ Or run [bold cyan]make crawl[/] to start fresh crawling.\n"
+            "→ If data is in a folder with different casing (e.g. Data/ vs data/), rename it.",
             title="[bold]Knowledge Base[/]",
             border_style="red",
         )

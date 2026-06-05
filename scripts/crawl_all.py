@@ -275,16 +275,29 @@ def _ingest_batch(urls: list[str], manifest: dict) -> int:
 
 
 def _check_playwright_browser() -> None:
+    import subprocess
     from pathlib import Path
 
     from playwright.sync_api import sync_playwright
 
     with sync_playwright() as pw:
         exe = pw.chromium.executable_path
+
     if not Path(exe).exists():
         console.print(
             "[bold red]Playwright Chromium browser not found.[/bold red]\n"
             "Run:  [bold]python -m playwright install chromium[/bold]  then retry."
+        )
+        raise SystemExit(1)
+
+    # Verify the binary can actually execute — catches missing system libraries on Linux
+    # (e.g. "libnspr4.so: cannot open shared object file: No such file or directory")
+    result = subprocess.run([exe, "--version"], capture_output=True, timeout=10)
+    if result.returncode != 0:
+        console.print(
+            "[bold red]Playwright Chromium browser found but cannot launch.[/bold red]\n"
+            "Missing system libraries. On Linux, run:\n"
+            "  [bold]python -m playwright install-deps chromium[/bold]  (requires root/sudo)"
         )
         raise SystemExit(1)
 

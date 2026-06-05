@@ -47,6 +47,7 @@ help:
 setup:
 	pip install -r requirements.txt
 	python -m playwright install chromium
+	python -m playwright install-deps chromium
 
 up:
 	@python -c "import subprocess,sys; r=subprocess.run(['docker','info'],capture_output=True); sys.exit(0) if r.returncode==0 else (print('ERROR: Docker is not running. Open Docker Desktop and wait for the whale icon to be steady, then retry.') or sys.exit(1))"

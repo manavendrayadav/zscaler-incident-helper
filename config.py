@@ -42,8 +42,8 @@ class Config:
     # Crawl4AI Docker service
     CRAWL4AI_BASE_URL: str = os.getenv("CRAWL4AI_BASE_URL", "http://localhost:11235")
 
-    # Data paths
-    DATA_DIR: Path = Path(__file__).parent / "data"
+    # Data paths — override DATA_DIR in .env to use a different location
+    DATA_DIR: Path = Path(os.getenv("DATA_DIR", str(Path(__file__).parent / "data")))
     RAW_DIR: Path = DATA_DIR / "raw"
     MANIFEST_FILE: Path = DATA_DIR / "crawl_manifest.json"
 
