@@ -1,4 +1,4 @@
-.PHONY: setup crawl crawl-all crawl-gpu update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit preflight help
+.PHONY: setup uninstall clean crawl crawl-all crawl-gpu update ingest up up-infra down logs logs-crawl4ai shell reset-db doctor ollama-setup ollama-vision validate-config lint format typecheck test test-fast test-integration ci pre-commit preflight help
 
 help:
 	@echo ""
@@ -6,6 +6,8 @@ help:
 	@echo "  ─────────────────────────────────────────────────────────────"
 	@echo "  Infrastructure"
 	@echo "  make setup            Install host Python deps + Playwright browser"
+	@echo "  make uninstall        Remove Python deps and Playwright browser (reverses setup)"
+	@echo "  make clean            Wipe Docker volumes, crawled data, and caches (destructive)"
 	@echo "  make up               Start full Docker stack (all services)"
 	@echo "  make up-infra         Start only Qdrant + Crawl4AI (for crawling)"
 	@echo "  make down             Stop all Docker services"
@@ -48,6 +50,22 @@ setup:
 	pip install -r requirements.txt
 	python -m playwright install chromium
 	python -m playwright install-deps chromium
+
+uninstall:
+	pip uninstall -r requirements.txt -y
+	python -m playwright uninstall chromium
+	@echo ""
+	@echo "  Python deps and Playwright browser removed."
+	@echo "  Run 'make clean' to also wipe crawled data, caches, and Docker volumes."
+	@echo ""
+
+clean:
+	docker compose down -v
+	python -c "import shutil; [shutil.rmtree(p, ignore_errors=True) for p in ['data/raw', '.mypy_cache', '.pytest_cache', '.ruff_cache']]"
+	python -c "import pathlib; [p.unlink(missing_ok=True) for p in [*pathlib.Path('data').glob('*.log'), *pathlib.Path('data').glob('embeddings_cache*'), pathlib.Path('data/crawl_manifest.json')]]"
+	@echo ""
+	@echo "  Docker volumes, crawled data, and caches removed."
+	@echo ""
 
 up:
 	@python -c "import subprocess,sys; r=subprocess.run(['docker','info'],capture_output=True); sys.exit(0) if r.returncode==0 else (print('ERROR: Docker is not running. Open Docker Desktop and wait for the whale icon to be steady, then retry.') or sys.exit(1))"
