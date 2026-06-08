@@ -52,7 +52,7 @@ setup:
 	python -m playwright install-deps chromium
 
 uninstall:
-	python -m playwright uninstall chromium
+	python -c "import importlib.util, subprocess, sys; spec = importlib.util.find_spec('playwright'); subprocess.run([sys.executable, '-m', 'playwright', 'uninstall', 'chromium']) if spec else print('playwright not installed -- skipping browser uninstall')"
 	pip uninstall -r requirements.txt -y
 	@echo ""
 	@echo "  Python deps and Playwright browser removed."
