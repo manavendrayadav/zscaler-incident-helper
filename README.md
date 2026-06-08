@@ -225,6 +225,8 @@ The Zscaler sitemap contains **4,103 pages** across ZIA, ZPA, ZDX, and ZCC. The 
 | Target | Description |
 |---|---|
 | `make setup` | Install host Python deps + Playwright browser |
+| `make uninstall` | Remove Python deps and Playwright browser (reverses `make setup`) |
+| `make clean` | Wipe Docker volumes, crawled data, and caches (**destructive**) |
 | `make up` | Start full Docker stack |
 | `make up-infra` | Start only Qdrant + Crawl4AI |
 | `make crawl` | Crawl Zscaler docs — markdown only, **no embedding** (CPU safe) |

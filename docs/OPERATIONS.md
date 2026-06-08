@@ -45,6 +45,8 @@ make validate-config  # Pre-flight check before crawl/ingest
 make update           # Crawl only new/changed Zscaler pages
 make ingest           # Re-embed and re-index into Qdrant
 make logs             # Tail rag-api logs
+make uninstall        # Remove Python deps and Playwright browser (reverses setup)
+make clean            # Wipe Docker volumes, crawled data, and caches (destructive)
 make help             # Show all available targets
 ```
 
@@ -104,6 +106,8 @@ All project commands use `make` (e.g. `make up`, `make doctor`). It works out of
 | `make validate-config` | `python scripts/validate_config.py` |
 | `make test-fast` | `pytest tests/unit/ -v` |
 | `make lint` | `ruff check .` |
+| `make uninstall` | `python -m playwright uninstall chromium` then `pip uninstall -r requirements.txt -y` |
+| `make clean` | `docker compose down -v` then delete `data/raw/`, `data/*.log`, `data/embeddings_cache*`, `data/crawl_manifest.json`, `.mypy_cache`, `.pytest_cache`, `.ruff_cache` |
 
 ---
 

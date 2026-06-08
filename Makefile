@@ -52,8 +52,8 @@ setup:
 	python -m playwright install-deps chromium
 
 uninstall:
-	pip uninstall -r requirements.txt -y
 	python -m playwright uninstall chromium
+	pip uninstall -r requirements.txt -y
 	@echo ""
 	@echo "  Python deps and Playwright browser removed."
 	@echo "  Run 'make clean' to also wipe crawled data, caches, and Docker volumes."
