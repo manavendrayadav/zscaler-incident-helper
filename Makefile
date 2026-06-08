@@ -54,18 +54,13 @@ setup:
 uninstall:
 	python -c "import importlib.util, subprocess, sys; spec = importlib.util.find_spec('playwright'); subprocess.run([sys.executable, '-m', 'playwright', 'uninstall', 'chromium']) if spec else print('playwright not installed -- skipping browser uninstall')"
 	pip uninstall -r requirements.txt -y
-	@echo ""
-	@echo "  Python deps and Playwright browser removed."
-	@echo "  Run 'make clean' to also wipe crawled data, caches, and Docker volumes."
-	@echo ""
+	@python -c "print(); print('  Python deps and Playwright browser removed.'); print('  Run make clean to also wipe crawled data, caches, and Docker volumes.'); print()"
 
 clean:
 	docker compose down -v
 	python -c "import shutil; [shutil.rmtree(p, ignore_errors=True) for p in ['data/raw', '.mypy_cache', '.pytest_cache', '.ruff_cache']]"
 	python -c "import pathlib; [p.unlink(missing_ok=True) for p in [*pathlib.Path('data').glob('*.log'), *pathlib.Path('data').glob('embeddings_cache*'), pathlib.Path('data/crawl_manifest.json')]]"
-	@echo ""
-	@echo "  Docker volumes, crawled data, and caches removed."
-	@echo ""
+	@python -c "print(); print('  Docker volumes, crawled data, and caches removed.'); print()"
 
 up:
 	@python -c "import subprocess,sys; r=subprocess.run(['docker','info'],capture_output=True); sys.exit(0) if r.returncode==0 else (print('ERROR: Docker is not running. Open Docker Desktop and wait for the whale icon to be steady, then retry.') or sys.exit(1))"
