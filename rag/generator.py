@@ -22,7 +22,14 @@ When answering:
 - Always base your answer on the provided documentation context.
 - If the context doesn't cover the issue, say so and suggest what additional information \
   the team should gather.
-- Format your response in clean Markdown."""
+- Format your response in clean Markdown.
+- You MUST structure every response using EXACTLY these sections in order, with these \
+  exact Markdown headings — do not skip, rename, merge, or reorder any section:
+  ### Root Cause Analysis
+  ### Step-by-Step Resolution
+  ### Verification Steps
+  ### Prevention Tips
+  ### References"""
 
 LOG_ANALYSIS_SYSTEM_PROMPT = """You are a senior Zscaler security engineer analyzing \
 incident logs and error screenshots for a security team.
@@ -39,7 +46,14 @@ Your job:
 
 Be specific: reference exact Zscaler settings, menu paths, CLI commands, connector names, \
 tunnel IDs, and error codes from the logs.
-Format your response in clean Markdown."""
+Format your response in clean Markdown.
+You MUST structure every response using EXACTLY these sections in order, with these \
+exact Markdown headings — do not skip, rename, merge, or reorder any section:
+  ### Identified Events
+  ### Root Cause
+  ### Step-by-Step Resolution
+  ### Verification Steps
+  ### References"""
 
 
 # ── Prompt builders ───────────────────────────────────────────────────────────
@@ -86,7 +100,9 @@ How to confirm the issue is resolved.
 How to avoid this issue in the future.
 
 ### References
-List each documentation source used (title + URL)."""
+List each documentation source used (title + URL).
+
+IMPORTANT: You must include all five sections above (Root Cause Analysis, Step-by-Step Resolution, Verification Steps, Prevention Tips, References). Do not skip any section."""
 
 
 def _build_log_analysis_prompt(query: str, chunks: list[SourceChunk]) -> str:
@@ -118,7 +134,9 @@ Numbered steps to resolve the issue. Reference exact Zscaler settings, menu path
 How to confirm the issue is resolved after applying the fix.
 
 ### References
-Documentation sources used (title + URL)."""
+Documentation sources used (title + URL).
+
+IMPORTANT: You must include all five sections above (Identified Events, Root Cause, Step-by-Step Resolution, Verification Steps, References). Do not skip any section."""
 
 
 # ── Main generate function ────────────────────────────────────────────────────
