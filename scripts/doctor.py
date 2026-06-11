@@ -226,7 +226,7 @@ def render_services(containers: dict[str, bool], http: dict[str, tuple[bool, str
     t.add_column("Status", min_width=8)
 
     rows = [
-        ("qdrant", "zih-qdrant", f"{QDRANT_URL}/health", False),
+        ("qdrant", "zih-qdrant", f"{QDRANT_URL}/healthz", False),
         ("crawl4ai", "zih-crawl4ai", f"{CRAWL4AI_URL}/health", True),  # optional
         ("rag-api", "zih-api", f"{RAG_API_URL}/health", False),
         ("open-webui", "zih-openwebui", OPENWEBUI_URL, True),  # optional
@@ -358,7 +358,7 @@ def main() -> int:
 
     http_results: dict[str, tuple[bool, str]] = {}
     for service, url in [
-        ("qdrant", f"{QDRANT_URL}/health"),
+        ("qdrant", f"{QDRANT_URL}/healthz"),
         ("crawl4ai", f"{CRAWL4AI_URL}/health"),
         ("rag-api", f"{RAG_API_URL}/health"),
         ("open-webui", OPENWEBUI_URL),
