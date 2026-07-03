@@ -41,6 +41,7 @@ def check_qdrant_reachable() -> None:
     # Version compatibility warning — qdrant-client minor version must be ≤ server minor
     try:
         from importlib.metadata import version as pkg_version
+
         from packaging.version import Version
 
         installed = Version(pkg_version("qdrant-client"))
