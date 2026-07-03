@@ -1,5 +1,5 @@
 # Web crawling
-crawl4ai>=0.6.0
+crawl4ai>=0.8.9
 playwright>=1.45.0
 
 # Vector database
