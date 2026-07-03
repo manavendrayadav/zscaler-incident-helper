@@ -82,7 +82,9 @@ def _save_embed_cache(chunks: list, embeddings) -> None:
 
             # Convert numpy float32 → Python float before JSON dump (float32 is not JSON serializable)
             sparse_path.write_text(
-                _json.dumps([{k: float(v) for k, v in row.items()} for row in embeddings["sparse"]]),
+                _json.dumps(
+                    [{k: float(v) for k, v in row.items()} for row in embeddings["sparse"]]
+                ),
                 encoding="utf-8",
             )
         else:

@@ -187,7 +187,9 @@ def get_qdrant_product_counts() -> dict[str, int]:
     try:
         from qdrant_client import QdrantClient
 
-        client = QdrantClient(host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")), check_compatibility=False)
+        client = QdrantClient(
+            host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")), check_compatibility=False
+        )
         counts: Counter = Counter()
         offset = None
         while True:
@@ -315,7 +317,9 @@ def render_qdrant(http_ok: bool, product_counts: dict) -> Panel:
     try:
         from qdrant_client import QdrantClient
 
-        client = QdrantClient(host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")), check_compatibility=False)
+        client = QdrantClient(
+            host="localhost", port=int(os.getenv("QDRANT_PORT", "6333")), check_compatibility=False
+        )
         info = client.get_collection(COLLECTION)
         points = info.points_count or 0
         status = str(info.status)
