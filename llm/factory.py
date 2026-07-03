@@ -45,7 +45,7 @@ def all_models() -> dict[str, list[str]]:
     result = {}
     for name, cls in _PROVIDERS.items():
         try:
-            result[name] = cls().available_models()
+            result[name] = cls.available_models()
         except Exception:
             result[name] = []
     return result

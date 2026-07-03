@@ -47,5 +47,6 @@ class OllamaProvider(BaseLLMProvider):
             completion_tokens=resp.usage.completion_tokens if resp.usage else 0,
         )
 
-    def available_models(self) -> list[str]:
+    @classmethod
+    def available_models(cls) -> list[str]:
         return DEFAULT_MODELS

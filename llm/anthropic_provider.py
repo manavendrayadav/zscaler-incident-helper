@@ -51,5 +51,6 @@ class AnthropicProvider(BaseLLMProvider):
             completion_tokens=resp.usage.output_tokens,
         )
 
-    def available_models(self) -> list[str]:
+    @classmethod
+    def available_models(cls) -> list[str]:
         return MODELS

@@ -34,6 +34,7 @@ class BaseLLMProvider(ABC):
         """Send messages to the LLM and return the response."""
         ...
 
-    def available_models(self) -> list[str]:
+    @classmethod
+    def available_models(cls) -> list[str]:
         """Return models this provider exposes."""
         return []
