@@ -7,7 +7,7 @@
 qdrant-client>=1.14.0,<1.15.0
 
 # Embeddings (runs locally, no API cost)
-sentence-transformers>=5.5.1
+sentence-transformers>=5.6.0
 FlagEmbedding>=1.4.0          # bge-m3 hybrid dense+sparse embeddings
 drain3>=0.9.11                # log template mining for extract_log_signals()
 
