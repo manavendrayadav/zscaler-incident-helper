@@ -33,4 +33,4 @@ tqdm>=4.67.3
 rich>=15.0.0
 requests>=2.34.2
 beautifulsoup4>=4.15.0        # HTML parsing in crawl_all.py
-numpy>=1.26.0                 # vector ops in ingest/embedder/indexer
+numpy>=2.5.1                 # vector ops in ingest/embedder/indexer
