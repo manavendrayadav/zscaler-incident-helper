@@ -3,7 +3,7 @@ crawl4ai>=0.9.1
 playwright>=1.61.0
 
 # Vector database
-qdrant-client>=1.14.0,<1.15.0
+qdrant-client>=1.18.0,<1.19.0
 
 # Embeddings (runs locally, no API cost)
 sentence-transformers>=5.6.0
