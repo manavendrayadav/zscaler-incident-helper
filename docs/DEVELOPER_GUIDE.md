@@ -114,7 +114,7 @@ bge-m3 generates two representations:
 ```python
 query_embedding = {
     "dense": [0.021, -0.154, ..., 0.033],  # 1024 floats — semantic meaning
-    "sparse": {"531": 0.8, "1024": 0.5}    # token_id → weight — keyword matching
+    "sparse": {"531": 0.8, "1024": 0.5},  # token_id → weight — keyword matching
 }
 ```
 
@@ -134,10 +134,12 @@ File: `rag/retriever.py` — `_search_hybrid()`
 Each of the 20 candidates scored as a (query, chunk) pair:
 
 ```python
-scores = cross_encoder.predict([
-    ("ZPA tunnel down causes?", chunk_1_text),
-    ...  # all 20 candidates
-])
+scores = cross_encoder.predict(
+    [
+        ("ZPA tunnel down causes?", chunk_1_text),
+        ...,  # all 20 candidates
+    ]
+)
 ```
 
 Candidates sorted by score; those below `MIN_SCORE=0.3` discarded.
@@ -385,13 +387,15 @@ b64 = base64.b64encode(Path("screenshot.png").read_bytes()).decode()
 
 response = client.chat.completions.create(
     model="zih/ollama-qwen2-vl-7b",
-    messages=[{
-        "role": "user",
-        "content": [
-            {"type": "text", "text": "What error is shown in this screenshot?"},
-            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}}
-        ]
-    }]
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What error is shown in this screenshot?"},
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
+            ],
+        }
+    ],
 )
 ```
 

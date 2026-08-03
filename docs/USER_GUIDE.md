@@ -354,7 +354,7 @@ response = client.chat.completions.create(
     model="zih/groq-llama-3-3-70b-versatile",
     messages=[{"role": "user", "content": "ZPA App Connector AUTH_FAILED causes?"}],
     temperature=0.3,
-    extra_body={"top_k": 5, "product_filter": "zpa"}
+    extra_body={"top_k": 5, "product_filter": "zpa"},
 )
 print(response.choices[0].message.content)
 ```
@@ -362,13 +362,16 @@ print(response.choices[0].message.content)
 ### Using `requests`
 ```python
 import requests
+
 response = requests.post(
     "http://localhost:8000/v1/chat/completions",
     headers={"Authorization": "Bearer zih-api"},
-    json={"model": "zih/groq-llama-3-3-70b-versatile",
-          "messages": [{"role": "user", "content": "ZIA SSL bypass for M365?"}],
-          "top_k": 5},
-    timeout=30
+    json={
+        "model": "zih/groq-llama-3-3-70b-versatile",
+        "messages": [{"role": "user", "content": "ZIA SSL bypass for M365?"}],
+        "top_k": 5,
+    },
+    timeout=30,
 )
 print(response.json()["choices"][0]["message"]["content"])
 ```
