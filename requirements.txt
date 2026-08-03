@@ -11,7 +11,7 @@ FlagEmbedding>=1.4.0          # bge-m3 hybrid dense+sparse embeddings
 drain3>=0.9.11                # log template mining for extract_log_signals()
 
 # LLM providers
-openai>=1.0.0
+openai>=2.46.0
 groq>=1.5.0
 anthropic>=0.117.0          # Anthropic Claude (claude-opus, claude-sonnet, claude-haiku)
 
