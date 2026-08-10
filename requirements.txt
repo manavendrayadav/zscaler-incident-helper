@@ -6,7 +6,7 @@ playwright>=1.61.0
 qdrant-client>=1.18.0,<1.19.0
 
 # Embeddings (runs locally, no API cost)
-sentence-transformers>=5.6.0
+sentence-transformers>=5.7.0
 FlagEmbedding>=1.4.0          # bge-m3 hybrid dense+sparse embeddings
 drain3>=0.9.11                # log template mining for extract_log_signals()
 
